@@ -1,0 +1,204 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK — Orders</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; cursor:default; }
+body { background:radial-gradient(circle at 20% 20%,#1e293b,#020617 70%); min-height:100vh; color:white; font-family:sans-serif; }
+body::before { content:""; position:fixed; width:700px; height:700px; background:radial-gradient(circle,rgba(99,102,241,0.15),transparent); filter:blur(120px); top:-150px; left:-150px; z-index:0; }
+
+::-webkit-scrollbar { width:10px; }
+::-webkit-scrollbar-track { background:#020617; }
+::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.4); border-radius:20px; border:2px solid #020617; }
+::-webkit-scrollbar-thumb:hover { background:rgba(99,102,241,0.7); }
+
+.modal-box::-webkit-scrollbar { width:6px; }
+.modal-box::-webkit-scrollbar-track { background:transparent; }
+.modal-box::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.4); border-radius:20px; }
+.modal-box::-webkit-scrollbar-thumb:hover { background:rgba(99,102,241,0.7); }
+
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid rgba(255,255,255,0.07);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 32px 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.sidebar-logo { letter-spacing:6px; font-weight:600; font-size:13px; margin-bottom:6px; }
+.admin-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; padding:4px 12px; border-radius:999px; font-size:10px; letter-spacing:2px; font-weight:600; text-transform:uppercase; margin-bottom:36px; }
+.nav-section-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:10px; padding-left:14px; }
+.nav-item { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:14px; color:rgba(255,255,255,0.55); text-decoration:none; transition:0.25s ease; font-size:14px; margin-bottom:4px; }
+.nav-item:hover { background:rgba(255,255,255,0.06); color:white; transform:translateX(3px); }
+.nav-item.active { background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.3); color:white; }
+.nav-item i { width:18px; text-align:center; font-size:14px; }
+.sidebar-bottom { margin-top:auto; border-top:1px solid rgba(255,255,255,0.07); padding-top:20px; }
+.main { margin-left:260px; padding:36px 40px; position:relative; z-index:10; }
+.glass { background:rgba(255,255,255,0.045); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); }
+.status-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 12px; border-radius:999px; font-size:11px; font-weight:600; }
+.status-Pending    { background:rgba(234,179,8,0.15);  border:1px solid rgba(234,179,8,0.3);  color:#fde047; }
+.status-Processing { background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#93c5fd; }
+.status-Shipped    { background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:#d8b4fe; }
+.status-Delivered  { background:rgba(34,197,94,0.15);  border:1px solid rgba(34,197,94,0.3);  color:#86efac; }
+select, button, a { cursor:pointer; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div>
+        <h1 class="sidebar-logo">O V E R C L O C K</h1>
+        <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Admin</span>
+    </div>
+    <p class="nav-section-label">Dashboard</p>
+    <a href="{% url 'adminhome' %}" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Overview</a>
+    <p class="nav-section-label" style="margin-top:20px;">Manage</p>
+    <a href="{% url 'products' %}"  class="nav-item"><i class="fa-solid fa-box"></i> Products</a>
+    <a href="{% url 'category_list' %}" class="nav-item"><i class="fa-solid fa-tags"></i> Categories</a>
+    <a href="{% url 'admin_orders' %}"  class="nav-item active"><i class="fa-solid fa-receipt"></i> Orders</a>
+    <a href="{% url 'userlist' %}"      class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
+    <p class="nav-section-label" style="margin-top:20px;">Store</p>
+    <a href="{% url 'index' %}"        class="nav-item"><i class="fa-solid fa-store"></i> View Store</a>
+    <a href="{% url 'all_products' %}" class="nav-item"><i class="fa-solid fa-list"></i> All Products</a>
+    <div class="sidebar-bottom">
+        <a href="{% url 'index' %}"       class="nav-item" style="color:rgba(245,158,11,0.7);"><i class="fa-solid fa-store"></i> Exit to Store</a>
+        <a href="{% url 'adminlogout' %}" class="nav-item" style="color:rgba(239,68,68,0.7);"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </div>
+</aside>
+
+<main class="main">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold mb-1">Orders</h2>
+            <p class="text-gray-400 text-sm">View and manage all customer orders</p>
+        </div>
+        <span class="text-indigo-400 text-sm font-medium">{{ orders|length }} total orders</span>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="mb-6 px-5 py-4 rounded-2xl text-sm font-medium flex items-center gap-3
+        {% if message.tags == 'error' %}bg-red-500/10 border border-red-500/25 text-red-300
+        {% else %}bg-green-500/10 border border-green-500/25 text-green-300{% endif %}">
+        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if orders %}
+    <div class="space-y-5">
+        {% for order in orders %}
+        <div class="glass rounded-2xl p-6">
+
+            <!-- Header -->
+            <div class="flex flex-wrap justify-between items-start gap-4 mb-4">
+                <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest mb-1">Order ID</p>
+                    <p class="text-lg font-bold text-indigo-400 tracking-wider">{{ order.order_id }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ order.created_at|date:"d M Y, h:i A" }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="status-badge status-{{ order.status }}">
+                        <i class="fa-solid fa-circle text-[6px]"></i> {{ order.status }}
+                    </span>
+                    <p class="text-xl font-bold mt-2">₹{{ order.grand_total }}</p>
+                </div>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-400 mb-4">
+                <div><p class="text-gray-600 mb-1">Customer</p><p class="text-white">{{ order.full_name }}</p></div>
+                <div><p class="text-gray-600 mb-1">Email</p><p class="text-white">{{ order.email }}</p></div>
+                <div><p class="text-gray-600 mb-1">Phone</p><p class="text-white">{{ order.phone }}</p></div>
+                <div><p class="text-gray-600 mb-1">Payment</p><p class="text-white">{{ order.get_payment_method_display }}</p></div>
+                <div class="col-span-2"><p class="text-gray-600 mb-1">Address</p><p class="text-white">{{ order.address }}, {{ order.city }} — {{ order.pincode }}</p></div>
+            </div>
+
+            <!-- Items -->
+            <div class="border-t border-white/5 pt-4 mb-4 space-y-2">
+                {% for item in order.items.all %}
+                <div class="flex justify-between text-sm text-gray-400">
+                    <span>
+                        {{ item.product_name }} × {{ item.quantity }}
+                        {% if item.is_digital %}<span class="ml-2 text-indigo-400 text-xs"><i class="fa-solid fa-key"></i> Digital</span>{% endif %}
+                    </span>
+                    <span class="text-white">₹{{ item.total|floatformat:0 }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Digital Delivery Info + License Key + Status -->
+            <div class="space-y-4">
+
+                {% for item in order.items.all %}
+                {% if item.is_digital %}
+                <div class="p-4 rounded-xl text-sm" style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2);">
+                    <p class="text-indigo-300 font-semibold mb-1"><i class="fa-solid fa-envelope mr-2"></i>Digital Delivery</p>
+                    <p class="text-gray-400">License key to be sent to: <span class="text-white font-medium">{{ order.delivery_email }}</span></p>
+                    {% if order.license_key %}
+                    <p class="text-green-400 mt-1 text-xs"><i class="fa-solid fa-check mr-1"></i> License key: <span class="font-mono">{{ order.license_key }}</span></p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+
+                {% for item in order.items.all %}{% if item.is_digital %}
+                <form method="POST" action="{% url 'save_license_key' order.order_id %}" class="flex gap-3">
+                    {% csrf_token %}
+                    <input type="text" name="license_key"
+                           placeholder="Enter license key e.g. XXXX-XXXX-XXXX-XXXX"
+                           value="{{ order.license_key|default:'' }}"
+                           style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:10px 14px; border-radius:10px; outline:none; font-size:14px;">
+                    <button type="submit"
+                            style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; padding:10px 20px; border-radius:10px; font-size:14px; font-weight:600; white-space:nowrap;">
+                        <i class="fa-solid fa-key mr-1"></i> Send License Key
+                    </button>
+                </form>
+                {% endif %}{% endfor %}
+
+                <form method="POST" action="{% url 'update_order_status' order.order_id %}" class="flex items-center gap-3">
+                    {% csrf_token %}
+                    <select name="status"
+                            style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); color:white; padding:10px 16px; border-radius:10px; outline:none; font-size:14px;">
+                        {% for value, label in order.STATUS_CHOICES %}
+                        <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit"
+                            style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; padding:10px 20px; border-radius:10px; font-size:14px; font-weight:600;">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Update Status
+                    </button>
+                </form>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="glass rounded-3xl p-20 text-center max-w-xl mx-auto">
+        <i class="fa-solid fa-receipt text-4xl text-gray-600 mb-4 block opacity-20"></i>
+        <h2 class="text-2xl font-semibold mb-2">No orders yet</h2>
+        <p class="text-gray-500 text-sm">Orders will appear here once customers start purchasing.</p>
+    </div>
+    {% endif %}
+</main>
+
+</body>
+</html>

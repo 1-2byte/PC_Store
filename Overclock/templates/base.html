@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ── Dynamic Title ── -->
+    <title>{% block title %}OVERCLOCK | Gaming PC Store{% endblock %}</title>
+
+    <!-- ── SEO Meta Tags ── -->
+    <meta name="description"    content="{% block meta_description %}OVERCLOCK — Kerala's premier online gaming PC store. Shop prebuilt gaming PCs, GPUs, CPUs, peripherals and accessories. Free delivery on orders above ₹10,000.{% endblock %}">
+    <meta name="keywords"       content="{% block meta_keywords %}gaming PC, gaming laptop, GPU, CPU, RAM, SSD, gaming peripherals, prebuilt PC, custom PC build, gaming store Kerala, overclock{% endblock %}">
+    <meta name="author"         content="OVERCLOCK Gaming Store">
+    <meta name="robots"         content="index, follow">
+    <meta name="theme-color"    content="#6366f1">
+    <link rel="canonical"       href="{% block canonical %}https://overclock.store/{% endblock %}">
+
+    <!-- ── Open Graph (WhatsApp / Facebook previews) ── -->
+    <meta property="og:type"        content="website">
+    <meta property="og:site_name"   content="OVERCLOCK">
+    <meta property="og:title"       content="{% block og_title %}OVERCLOCK | Gaming PC Store{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Kerala's premier gaming PC destination. Prebuilt rigs, components, and accessories.{% endblock %}">
+    <meta property="og:url"         content="{% block og_url %}https://overclock.store/{% endblock %}">
+    <meta property="og:image"       content="{% block og_image %}{% load static %}{% static 'images/bg.avif' %}{% endblock %}">
+
+    <!-- ── Twitter Card ── -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="{% block twitter_title %}OVERCLOCK | Gaming PC Store{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Kerala's premier gaming PC destination.{% endblock %}">
+    <meta name="twitter:image"       content="{% block twitter_image %}{% load static %}{% static 'images/bg.avif' %}{% endblock %}">
+
+    <!-- ── Structured Data (JSON-LD) ── -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": "OVERCLOCK",
+        "description": "Gaming PC store selling prebuilt PCs, components, and peripherals",
+        "url": "https://overclock.store",
+        "telephone": "+91-XXXXXXXXXX",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Thrissur",
+            "addressRegion": "Kerala",
+            "addressCountry": "IN"
+        },
+        "priceRange": "₹₹₹",
+        "currenciesAccepted": "INR",
+        "paymentAccepted": "Cash, UPI, Credit Card"
+    }
+    </script>
+
+    {% block extra_head %}{% endblock %}
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: default; }
+        body {
+            font-family: Inter, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(99,102,241,.10), transparent 40%),
+                radial-gradient(circle at top right, rgba(255,255,255,.04), transparent 30%),
+                #050816;
+            color: white; overflow-x: hidden; position: relative;
+        }
+        a, button { cursor: pointer; text-decoration: none; }
+        input, textarea, select { cursor: text; }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #050816; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 20px; }
+        .build-btn { background: linear-gradient(135deg, #6366f1, #818cf8); transition: .3s ease; }
+        .build-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(99,102,241,.22); }
+    </style>
+</head>
+<body>
+
+<header class="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-black/20">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+
+        <a href="{% url 'index' %}" class="text-xl md:text-2xl font-semibold tracking-[0.45em]">
+            OVERCLOCK
+        </a>
+
+        <nav class="hidden lg:flex items-center gap-8 text-sm text-gray-300">
+            <a href="{% url 'index' %}" class="hover:text-white transition">Home</a>
+
+            <div class="relative group z-50">
+                <button class="hover:text-white transition flex items-center gap-2 px-2 py-1">
+                    Products <i class="fa-solid fa-chevron-down text-xs"></i>
+                </button>
+
+                <div class="absolute top-full left-0 mt-3 w-64 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999] max-h-[420px] overflow-y-auto">
+                    <a href="{% url 'all_products' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">All Products</a>
+                    {% for cat in nav_categories %}
+                    <a href="{% url 'all_products' %}?category={{ cat.name|urlencode }}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">{{ cat.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <a href="{% url 'about' %}" class="hover:text-white transition">About</a>
+
+            <a href="{% url 'cart' %}" class="hover:text-white transition" title="Cart">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </a>
+
+            <div class="relative group z-50">
+                <button class="hover:text-white transition px-2 py-1" title="Support">
+                    <i class="fa-solid fa-headset text-lg"></i>
+                </button>
+
+                <div class="absolute right-0 top-full mt-3 w-52 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999]">
+                    <a href="{% url 'feedback' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Feedback</a>
+                    <a href="{% url 'contact' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Contact Us</a>
+                </div>
+            </div>
+
+            <div class="relative group z-50">
+                <button class="hover:text-white transition px-2 py-1">
+                    <i class="fa-regular fa-user text-lg"></i>
+                </button>
+
+                <div class="absolute right-0 top-full mt-3 w-48 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999]">
+                    {% if request.session.email %}
+                        <a href="{% url 'profile' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Profile</a>
+                        <a href="{% url 'logout' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Logout</a>
+                        <a href="{% url 'order_history' %}">
+                            <i class="fa-solid fa-clock-rotate-left"></i> My Orders
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+       <a href="#" class="build-btn px-6 py-3 rounded-2xl text-sm font-medium">
+            Build Your Dream PC
+        </a>
+
+    </div>
+</header>
+
+<main class="relative z-10">
+    {% block content %}
+    {% endblock %}
+</main>
+
+<footer class="text-center py-10 text-gray-500 text-sm relative z-10">
+    © 2026 OVERCLOCK — Built for Performance
+</footer>
+
+</body>
+</html>

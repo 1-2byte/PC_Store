@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK | Order Confirmed</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:Inter,sans-serif; background:radial-gradient(circle at top left,rgba(99,102,241,.10),transparent 40%),#050816; color:white; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+.glass { background:rgba(255,255,255,0.035); backdrop-filter:blur(18px); border:1px solid rgba(255,255,255,0.06); }
+.badge { display:inline-flex; align-items:center; gap:6px; padding:4px 14px; border-radius:999px; font-size:11px; font-weight:600; letter-spacing:1px; }
+</style>
+</head>
+<body>
+<div class="max-w-2xl w-full mx-auto">
+    <div class="glass rounded-3xl p-10 text-center">
+
+        <!-- Success Icon -->
+        <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+             style="background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.3);">
+            <i class="fa-solid fa-check text-3xl text-green-400"></i>
+        </div>
+
+        <h1 class="text-3xl font-bold mb-2">Order Placed!</h1>
+        <p class="text-gray-400 mb-6">Thank you, <span class="text-white font-medium">{{ order.full_name }}</span>. Your order has been received.</p>
+
+        <!-- Order ID -->
+        <div class="glass rounded-2xl p-5 mb-6 inline-block">
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1">Order ID</p>
+            <p class="text-2xl font-bold tracking-widest text-indigo-400">{{ order.order_id }}</p>
+        </div>
+
+        <!-- Order Details -->
+        <div class="glass rounded-2xl p-6 text-left mb-6 space-y-3 text-sm">
+            <div class="flex justify-between">
+                <span class="text-gray-400">Status</span>
+                <span class="badge" style="background:rgba(234,179,8,0.15); border:1px solid rgba(234,179,8,0.3); color:#fde047;">
+                    <i class="fa-solid fa-clock text-xs"></i> {{ order.status }}
+                </span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-400">Payment</span>
+                <span class="text-white">{{ order.get_payment_method_display }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-400">Delivery To</span>
+                <span class="text-white text-right max-w-[220px]">{{ order.address }}, {{ order.city }} — {{ order.pincode }}</span>
+            </div>
+            <div class="flex justify-between border-t border-white/5 pt-3">
+                <span class="text-gray-400">Total Paid</span>
+                <span class="text-xl font-bold text-white">₹{{ order.grand_total }}</span>
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div class="glass rounded-2xl p-5 text-left mb-6">
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4">Items Ordered</p>
+            <div class="space-y-3">
+                {% for item in order.items.all %}
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-300">
+                        {{ item.product_name }} <span class="text-gray-500">× {{ item.quantity }}</span>
+                        {% if item.is_digital %}<span class="ml-2 text-xs text-indigo-400"><i class="fa-solid fa-key"></i> Digital</span>{% endif %}
+                    </span>
+                    <span class="font-semibold">₹{{ item.total|floatformat:0 }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- License Key Block -->
+        {% if order.license_key %}
+        <div class="glass rounded-2xl p-5 mb-6" style="border-color:rgba(99,102,241,0.3);">
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-3">
+                <i class="fa-solid fa-key mr-1 text-indigo-400"></i> License Key
+            </p>
+            <p class="font-mono text-lg text-indigo-300 tracking-widest">{{ order.license_key }}</p>
+            <p class="text-xs text-gray-500 mt-2">Will also be sent to {{ order.delivery_email }}</p>
+        </div>
+        {% else %}
+        {% for item in order.items.all %}{% if item.is_digital %}
+        <div class="glass rounded-2xl p-5 mb-6" style="border-color:rgba(99,102,241,0.2);">
+            <p class="text-xs text-indigo-400 uppercase tracking-widest mb-1">
+                <i class="fa-solid fa-envelope mr-1"></i> Digital Delivery Pending
+            </p>
+            <p class="text-sm text-gray-400">Your license key will be sent to <span class="text-white">{{ order.delivery_email }}</span> shortly.</p>
+        </div>
+        {% endif %}{% endfor %}
+        {% endif %}
+
+        <!-- Buttons -->
+        <div class="flex gap-4 justify-center flex-wrap">
+            {% if request.session.email %}
+            <a href="{% url 'order_history' %}" class="px-6 py-3 rounded-2xl text-sm font-medium"
+               style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc;">
+                <i class="fa-solid fa-clock-rotate-left mr-2"></i> View Order History
+            </a>
+            {% endif %}
+            <a href="{% url 'index' %}" class="px-6 py-3 rounded-2xl text-sm font-medium"
+               style="background:linear-gradient(135deg,#6366f1,#4338ca);">
+                <i class="fa-solid fa-house mr-2"></i> Back to Home
+            </a>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

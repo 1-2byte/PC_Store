@@ -1,0 +1,461 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK — Products</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; cursor:default; }
+body { background:radial-gradient(circle at 20% 20%,#1e293b,#020617 70%); min-height:100vh; color:white; font-family:sans-serif; overflow-x:hidden; }
+body::before { content:""; position:fixed; width:700px; height:700px; background:radial-gradient(circle,rgba(99,102,241,0.15),transparent); filter:blur(120px); top:-150px; left:-150px; z-index:0; }
+
+::-webkit-scrollbar { width:10px; }
+::-webkit-scrollbar-track { background:#020617; }
+::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.4); border-radius:20px; border:2px solid #020617; }
+::-webkit-scrollbar-thumb:hover { background:rgba(99,102,241,0.7); }
+
+.modal-box::-webkit-scrollbar { width:6px; }
+.modal-box::-webkit-scrollbar-track { background:transparent; }
+.modal-box::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.4); border-radius:20px; }
+.modal-box::-webkit-scrollbar-thumb:hover { background:rgba(99,102,241,0.7); }
+
+
+.sidebar { position:fixed; top:0; left:0; width:260px; height:100vh; background:rgba(255,255,255,0.03); backdrop-filter:blur(24px); border-right:1px solid rgba(255,255,255,0.07); z-index:100; display:flex; flex-direction:column; padding:32px 20px; overflow-y:auto; overflow-x:hidden; }
+.sidebar-logo { letter-spacing:6px; font-weight:600; font-size:13px; margin-bottom:6px; }
+.admin-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; padding:4px 12px; border-radius:999px; font-size:10px; letter-spacing:2px; font-weight:600; text-transform:uppercase; margin-bottom:36px; }
+.nav-section-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:10px; padding-left:14px; }
+.nav-item { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:14px; color:rgba(255,255,255,0.55); text-decoration:none; transition:0.25s ease; font-size:14px; margin-bottom:4px; }
+.nav-item:hover { background:rgba(255,255,255,0.06); color:white; transform:translateX(3px); }
+.nav-item.active { background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.3); color:white; }
+.nav-item i { width:18px; text-align:center; font-size:14px; }
+.sidebar-bottom { margin-top:auto; border-top:1px solid rgba(255,255,255,0.07); padding-top:20px; }
+
+.main { margin-left:260px; padding:36px 40px; position:relative; z-index:10; }
+.glass { background:rgba(255,255,255,0.045); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.2); }
+
+.input-field { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:11px 14px; border-radius:10px; outline:none; transition:0.3s ease; font-size:14px; }
+.input-field:focus { border-color:rgba(99,102,241,0.6); background:rgba(99,102,241,0.07); box-shadow:0 0 0 3px rgba(99,102,241,0.12); }
+.input-field::placeholder { color:rgba(255,255,255,0.25); }
+select.input-field { appearance:none; background-image:url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>"); background-repeat:no-repeat; background-position:right 12px center; background-size:16px; padding-right:36px; }
+select.input-field option { background:#0f172a; color:white; }
+
+.activity-table { width:100%; border-collapse:collapse; }
+.activity-table th { text-align:left; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.3); padding:0 16px 14px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.activity-table td { padding:14px 16px; font-size:14px; color:rgba(255,255,255,0.75); border-bottom:1px solid rgba(255,255,255,0.04); }
+.activity-table tr:hover td { background:rgba(255,255,255,0.03); color:white; }
+.activity-table tr:last-child td { border-bottom:none; }
+
+.upload-box { border:2px dashed rgba(255,255,255,0.18); background:rgba(255,255,255,0.03); transition:0.3s ease; min-height:160px; border-radius:16px; }
+.upload-box:hover { border-color:rgba(99,102,241,0.7); background:rgba(99,102,241,0.08); }
+.upload-box.dragover { border-color:#6366f1; background:rgba(99,102,241,0.12); }
+
+input[type=text], input[type=number], textarea, select { cursor:text; }
+button, a { cursor:pointer; }
+
+/* modal backdrop */
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
+.modal-box { background:#0b1120; border:1px solid rgba(255,255,255,0.1); border-radius:24px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; padding:32px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div>
+        <h1 class="sidebar-logo">O V E R C L O C K</h1>
+        <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Admin</span>
+    </div>
+    <p class="nav-section-label">Dashboard</p>
+    <a href="{% url 'adminhome' %}" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Overview</a>
+    <p class="nav-section-label" style="margin-top:20px;">Manage</p>
+    <a href="{% url 'products' %}" class="nav-item active"><i class="fa-solid fa-box"></i> Products</a>
+    <a href="{% url 'category_list' %}" class="nav-item"><i class="fa-solid fa-tags"></i> Categories</a>
+    <a href="{% url 'promo_list' %}" class="nav-item"><i class="fa-solid fa-tag"></i> Promotions</a>
+    <a href="{% url 'admin_orders' %}" class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
+    <a href="{% url 'userlist' %}" class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
+    <p class="nav-section-label" style="margin-top:20px;">Store</p>
+    <a href="{% url 'index' %}" class="nav-item"><i class="fa-solid fa-store"></i> View Store</a>
+    <a href="{% url 'all_products' %}" class="nav-item"><i class="fa-solid fa-list"></i> All Products</a>
+    <div class="sidebar-bottom">
+        <a href="{% url 'index' %}" class="nav-item" style="color:rgba(245,158,11,0.7);"><i class="fa-solid fa-store"></i> Exit to Store</a>
+        <a href="{% url 'adminlogout' %}" class="nav-item" style="color:rgba(239,68,68,0.7);"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </div>
+</aside>
+
+<main class="main">
+
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold mb-1">Products</h2>
+            <p class="text-gray-400 text-sm">Manage your product inventory</p>
+        </div>
+        <button onclick="openAddModal()"
+                class="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold transition hover:-translate-y-0.5"
+                style="background:linear-gradient(135deg,#6366f1,#4338ca); box-shadow:0 4px 20px rgba(99,102,241,0.3);">
+            <i class="fa-solid fa-plus"></i> Add Product
+        </button>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="mb-6 px-5 py-4 rounded-2xl text-sm font-medium flex items-center gap-3
+        {% if message.tags == 'error' %}bg-red-500/10 border border-red-500/25 text-red-300
+        {% else %}bg-green-500/10 border border-green-500/25 text-green-300{% endif %}">
+        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Product Table -->
+    <div class="glass rounded-2xl overflow-hidden">
+        {% if products %}
+        <table class="activity-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Added</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td class="text-gray-500 text-xs">{{ forloop.counter }}</td>
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <img src="{{ product.image.url }}" class="w-10 h-10 rounded-xl object-contain"
+                                 style="background:rgba(255,255,255,0.04);">
+                            <span class="font-medium text-white">{{ product.name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-xs px-3 py-1 rounded-full"
+                              style="background:rgba(139,92,246,0.15); color:#c4b5fd;">
+                            {{ product.category }}
+                        </span>
+                    </td>
+                    <td class="font-semibold text-white">₹{{ product.price }}</td>
+                    <td>
+                        {% if product.quantity > 10 %}
+                            <span class="text-xs px-3 py-1 rounded-full" style="background:rgba(16,185,129,0.15); color:#34d399;">In Stock ({{ product.quantity }})</span>
+                        {% elif product.quantity > 0 %}
+                            <span class="text-xs px-3 py-1 rounded-full" style="background:rgba(245,158,11,0.15); color:#fbbf24;">Low ({{ product.quantity }})</span>
+                        {% else %}
+                            <span class="text-xs px-3 py-1 rounded-full" style="background:rgba(239,68,68,0.15); color:#fca5a5;">Out of Stock</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-xs text-gray-500">{{ product.created_at|date:"d M Y" }}</td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openEditModal(
+                                {{ product.id }},
+                                '{{ product.name|escapejs }}',
+                                '{{ product.description|escapejs }}',
+                                '{{ product.price }}',
+                                '{{ product.quantity }}',
+                                '{{ product.category|escapejs }}',
+                                '{{ product.image.url }}'
+                            )"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center transition hover:scale-110"
+                                style="background:rgba(99,102,241,0.15); color:#a5b4fc;">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button onclick="confirmDelete({{ product.id }}, '{{ product.name|escapejs }}')"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center transition hover:scale-110"
+                                style="background:rgba(239,68,68,0.15); color:#fca5a5;">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-16 text-gray-500">
+            <i class="fa-solid fa-box text-4xl mb-4 block opacity-20"></i>
+            No products yet.
+        </div>
+        {% endif %}
+    </div>
+
+</main>
+
+
+<!-- ══ ADD PRODUCT MODAL ══ -->
+<div id="addModal" class="modal-backdrop hidden">
+    <div class="modal-box">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold">Add Product</h3>
+            <button onclick="closeAddModal()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition">
+                <i class="fa-solid fa-xmark text-gray-400"></i>
+            </button>
+        </div>
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add">
+
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Product Name</label>
+                <input type="text" name="name" class="input-field" placeholder="e.g. RTX 4090" required>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Description</label>
+                <textarea name="description" class="input-field" rows="3" placeholder="Product description..." required></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Price (₹)</label>
+                    <input type="number" name="price" step="0.01" min="0" class="input-field" placeholder="0.00" required>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Quantity</label>
+                    <input type="number" name="quantity" min="0" class="input-field" placeholder="0" required>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Category</label>
+                <select name="category" class="input-field" required>
+                    <option value="" disabled selected>Select category</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.name }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Product Image</label>
+                <label for="addFileInput" id="addUploadBox"
+                       class="upload-box flex flex-col items-center justify-center text-center p-6 cursor-pointer">
+                    <div id="addUploadContent">
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-500 mb-2"></i>
+                        <p class="text-sm text-gray-400">Click or drag & drop image</p>
+                    </div>
+                    <div id="addPreviewWrapper" class="hidden relative w-full">
+                        <img id="addPreviewImage" class="w-full h-40 object-contain rounded-xl border border-white/10">
+                        <button type="button" onclick="clearAddImage(event)"
+                                class="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500 text-white text-sm flex items-center justify-center">×</button>
+                    </div>
+                    <input type="file" name="image" id="addFileInput" class="hidden" accept="image/*" required>
+                </label>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit"
+                        class="flex-1 py-3 rounded-xl font-semibold text-sm transition hover:-translate-y-0.5"
+                        style="background:linear-gradient(135deg,#6366f1,#4338ca);">
+                    <i class="fa-solid fa-plus mr-2"></i> Add Product
+                </button>
+                <button type="button" onclick="closeAddModal()"
+                        class="px-6 py-3 rounded-xl text-sm font-semibold transition"
+                        style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ══ EDIT PRODUCT MODAL ══ -->
+<div id="editModal" class="modal-backdrop hidden">
+    <div class="modal-box">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold">Edit Product</h3>
+            <button onclick="closeEditModal()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition">
+                <i class="fa-solid fa-xmark text-gray-400"></i>
+            </button>
+        </div>
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="product_id" id="editProductId">
+
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Product Name</label>
+                <input type="text" name="name" id="editName" class="input-field" required>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Description</label>
+                <textarea name="description" id="editDescription" class="input-field" rows="3" required></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Price (₹)</label>
+                    <input type="number" name="price" id="editPrice" step="0.01" min="0" class="input-field" required>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Quantity</label>
+                    <input type="number" name="quantity" id="editQuantity" min="0" class="input-field" required>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Category</label>
+                <select name="category" id="editCategory" class="input-field" required>
+                    <option value="" disabled>Select category</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.name }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Product Image <span class="normal-case text-gray-600">(leave empty to keep current)</span></label>
+                <label for="editFileInput" id="editUploadBox"
+                       class="upload-box flex flex-col items-center justify-center text-center p-6 cursor-pointer">
+                    <div id="editUploadContent">
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-500 mb-2"></i>
+                        <p class="text-sm text-gray-400">Click or drag & drop to replace image</p>
+                    </div>
+                    <div id="editPreviewWrapper" class="hidden relative w-full">
+                        <img id="editPreviewImage" class="w-full h-40 object-contain rounded-xl border border-white/10">
+                        <button type="button" onclick="clearEditImage(event)"
+                                class="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500 text-white text-sm flex items-center justify-center">×</button>
+                    </div>
+                    <input type="file" name="image" id="editFileInput" class="hidden" accept="image/*">
+                </label>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit"
+                        class="flex-1 py-3 rounded-xl font-semibold text-sm transition hover:-translate-y-0.5"
+                        style="background:linear-gradient(135deg,#6366f1,#4338ca);">
+                    <i class="fa-solid fa-floppy-disk mr-2"></i> Save Changes
+                </button>
+                <button type="button" onclick="closeEditModal()"
+                        class="px-6 py-3 rounded-xl text-sm font-semibold transition"
+                        style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ══ DELETE CONFIRM MODAL ══ -->
+<div id="deleteModal" class="modal-backdrop hidden">
+    <div class="modal-box" style="max-width:400px; text-align:center;">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+             style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3);">
+            <i class="fa-solid fa-trash text-red-400 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Delete Product?</h3>
+        <p class="text-gray-400 text-sm mb-6">
+            Are you sure you want to delete <span id="deleteProductName" class="text-white font-semibold"></span>? This cannot be undone.
+        </p>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="product_id" id="deleteProductId">
+            <div class="flex gap-3">
+                <button type="submit"
+                        class="flex-1 py-3 rounded-xl font-semibold text-sm"
+                        style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.3); color:#fca5a5;">
+                    <i class="fa-solid fa-trash mr-2"></i> Delete
+                </button>
+                <button type="button" onclick="closeDeleteModal()"
+                        class="flex-1 py-3 rounded-xl text-sm font-semibold"
+                        style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+// ── ADD MODAL ──
+function openAddModal() { document.getElementById('addModal').classList.remove('hidden'); }
+function closeAddModal() { document.getElementById('addModal').classList.add('hidden'); }
+
+// ── EDIT MODAL ──
+function openEditModal(id, name, desc, price, qty, category, imageUrl) {
+    document.getElementById('editProductId').value  = id;
+    document.getElementById('editName').value       = name;
+    document.getElementById('editDescription').value= desc;
+    document.getElementById('editPrice').value      = price;
+    document.getElementById('editQuantity').value   = qty;
+    document.getElementById('editCategory').value   = category;
+
+    // show current image
+    const img = document.getElementById('editPreviewImage');
+    img.src = imageUrl;
+    document.getElementById('editPreviewWrapper').classList.remove('hidden');
+    document.getElementById('editUploadContent').classList.add('hidden');
+
+    document.getElementById('editModal').classList.remove('hidden');
+}
+function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+    clearEditImage();
+}
+
+// ── DELETE MODAL ──
+function confirmDelete(id, name) {
+    document.getElementById('deleteProductId').value = id;
+    document.getElementById('deleteProductName').textContent = '"' + name + '"';
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+function closeDeleteModal() { document.getElementById('deleteModal').classList.add('hidden'); }
+
+// close modals on backdrop click
+['addModal','editModal','deleteModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) {
+        if (e.target === this) this.classList.add('hidden');
+    });
+});
+
+// ── IMAGE PREVIEW: ADD ──
+const addFileInput = document.getElementById('addFileInput');
+addFileInput.addEventListener('change', function() {
+    if (this.files[0]) showPreview(this.files[0], 'addPreviewImage', 'addPreviewWrapper', 'addUploadContent');
+});
+function clearAddImage(e) {
+    if (e) e.preventDefault();
+    addFileInput.value = '';
+    document.getElementById('addPreviewWrapper').classList.add('hidden');
+    document.getElementById('addUploadContent').classList.remove('hidden');
+}
+
+// ── IMAGE PREVIEW: EDIT ──
+const editFileInput = document.getElementById('editFileInput');
+editFileInput.addEventListener('change', function() {
+    if (this.files[0]) showPreview(this.files[0], 'editPreviewImage', 'editPreviewWrapper', 'editUploadContent');
+});
+function clearEditImage(e) {
+    if (e) e.preventDefault();
+    editFileInput.value = '';
+    document.getElementById('editPreviewWrapper').classList.add('hidden');
+    document.getElementById('editUploadContent').classList.remove('hidden');
+}
+
+function showPreview(file, imgId, wrapperId, contentId) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById(imgId).src = e.target.result;
+        document.getElementById(wrapperId).classList.remove('hidden');
+        document.getElementById(contentId).classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+// drag and drop for add
+const addBox = document.getElementById('addUploadBox');
+addBox.addEventListener('dragover', e => { e.preventDefault(); addBox.classList.add('dragover'); });
+addBox.addEventListener('dragleave', () => addBox.classList.remove('dragover'));
+addBox.addEventListener('drop', e => {
+    e.preventDefault(); addBox.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) {
+        addFileInput.files = e.dataTransfer.files;
+        showPreview(e.dataTransfer.files[0], 'addPreviewImage', 'addPreviewWrapper', 'addUploadContent');
+    }
+});
+</script>
+
+</body>
+</html>

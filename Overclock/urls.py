@@ -1,0 +1,48 @@
+from django.urls import path
+from .import views
+urlpatterns= [
+    path('',views.index, name='index'),
+    path('register/', views.register, name='register'),
+    path('login/', views.login, name='login'),
+    path('profile/', views.profile, name='profile'),
+    path('logout/', views.logout, name='logout'),
+    path('editprofile/', views.editprofile, name='editprofile'),
+    path('userlist/', views.userlist, name='userlist'),
+    path('deleteuser/<int:id>/', views.deleteuser, name='deleteuser'),
+    path('adminhome/products/', views.products, name='products'),
+    path('add_to_cart/<int:id>/', views.add_to_cart, name='add_to_cart'), 
+    path('cart/', views.cart, name='cart'), 
+    path('delete_cart/<int:id>/', views.delete_cart, name='delete_cart'),
+    path("all-products/", views.all_products, name="all_products"),
+    path("increase-cart/<int:id>/", views.increase_cart, name="increase_cart"),
+    path("decrease-cart/<int:id>/", views.decrease_cart, name="decrease_cart"),
+    path('feedback/', views.feedback, name='feedback'),
+    path('admin-login/', views.adminlogin, name='adminlogin'),
+    path('admin-home/',  views.adminhome,  name='adminhome'),
+    path('admin-logout/', views.adminlogout, name='adminlogout'),
+    path('adminhome/categories/', views.category_list, name='category_list'),
+    path('adminhome/categories/add/', views.add_category, name='add_category'),
+    path('adminhome/categories/edit/<int:id>/', views.edit_category, name='edit_category'),
+    path('adminhome/categories/delete/<int:id>/', views.delete_category, name='delete_category'),
+    path('contact/', views.contact, name='contact'),
+    path('checkout/',views.checkout, name='checkout'),
+    path('order-confirmation/<str:order_id>/', views.order_confirmation, name='order_confirmation'),
+    path('order-history/', views.order_history, name='order_history'),
+    path('adminhome/orders/', views.admin_orders, name='admin_orders'),
+    path('adminhome/orders/update-status/<str:order_id>/', views.update_order_status, name='update_order_status'),
+    path('adminhome/categories/toggle-digital/<int:id>/', views.toggle_digital, name='toggle_digital'),
+    path('adminhome/orders/save-license/<str:order_id>/', views.save_license_key, name='save_license_key'),
+    path('about/', views.about, name='about'),
+    path('robots.txt', views.robots_txt, name='robots_txt'),
+    path('adminhome/promos/', views.promo_list, name='promo_list'),
+    path('adminhome/promos/add/', views.add_promo, name='add_promo'),
+    path('adminhome/promos/edit/<int:id>/', views.edit_promo, name='edit_promo'),
+    path('adminhome/promos/delete/<int:id>/', views.delete_promo, name='delete_promo'),
+    path('adminhome/promos/toggle/<int:id>/', views.toggle_promo, name='toggle_promo'),
+    path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
+    path('remove-coupon/', views.remove_coupon, name='remove_coupon'),
+]
+
+
+
+

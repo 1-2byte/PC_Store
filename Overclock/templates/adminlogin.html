@@ -1,0 +1,268 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK — Admin Login</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: default;
+}
+
+body {
+    background: radial-gradient(circle at 20% 20%, #1e293b, #020617 70%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    overflow: hidden;
+}
+
+/* ambient glow blobs */
+body::before {
+    content: "";
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99,102,241,0.18), transparent);
+    filter: blur(120px);
+    top: -150px;
+    left: -150px;
+    z-index: 0;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(139,92,246,0.12), transparent);
+    filter: blur(100px);
+    bottom: -100px;
+    right: -100px;
+    z-index: 0;
+}
+
+.glass {
+    background: rgba(255,255,255,0.045);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.09);
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.logo {
+    letter-spacing: 6px;
+    font-weight: 700;
+}
+
+.input-field {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    padding: 14px 18px 14px 46px;
+    border-radius: 14px;
+    outline: none;
+    transition: 0.3s ease;
+    font-size: 14px;
+    cursor: text;
+}
+
+.input-field::placeholder {
+    color: rgba(255,255,255,0.3);
+}
+
+.input-field:focus {
+    border-color: rgba(99,102,241,0.6);
+    background: rgba(99,102,241,0.07);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+.input-wrap {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.3);
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #6366f1, #4338ca);
+    border-radius: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 13px;
+    transition: 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-login::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
+}
+
+.btn-login:hover::before {
+    left: 100%;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(99,102,241,0.4);
+}
+
+.error-msg {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.25);
+    color: #fca5a5;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+.fade-up {
+    animation: fadeUp 0.7s ease forwards;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #a5b4fc;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<div class="relative z-10 w-full max-w-md px-6 fade-up">
+
+    <div class="glass rounded-3xl p-10">
+
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <h1 class="logo text-2xl mb-3">O V E R C L O C K</h1>
+            <span class="admin-badge">
+                <i class="fa-solid fa-shield-halved text-xs"></i>
+                Admin Portal
+            </span>
+        </div>
+
+        <!-- Error -->
+        {% if error %}
+        <div class="error-msg mb-6">
+            <i class="fa-solid fa-circle-exclamation mr-2"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Invalid credentials fallback (for the simple view logic) -->
+        <div id="loginError" class="error-msg mb-6" style="display:none;">
+            <i class="fa-solid fa-circle-exclamation mr-2"></i>
+            Invalid username or password.
+        </div>
+
+        <!-- Form -->
+        <form method="POST" action="{% url 'adminlogin' %}">
+            {% csrf_token %}
+
+            <div class="space-y-4 mb-6">
+
+                <!-- Username -->
+                <div>
+                    <label class="block text-xs text-gray-400 mb-2 tracking-widest uppercase">
+                        Username
+                    </label>
+                    <div class="input-wrap">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input
+                            type="text"
+                            name="username"
+                            class="input-field"
+                            placeholder="Enter admin username"
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label class="block text-xs text-gray-400 mb-2 tracking-widest uppercase">
+                        Password
+                    </label>
+                    <div class="input-wrap">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input
+                            type="password"
+                            name="password"
+                            class="input-field"
+                            placeholder="Enter admin password"
+                            required
+                        >
+                    </div>
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn-login">
+                SIGN IN
+            </button>
+
+        </form>
+
+        <!-- Back link -->
+        <div class="text-center mt-6">
+            <a href="{% url 'index' %}"
+               class="text-gray-500 text-xs hover:text-gray-300 transition"
+               style="cursor:pointer;">
+                ← Back to Store
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

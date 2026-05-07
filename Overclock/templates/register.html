@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - CIRCLE</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+/* BACKGROUND */
+body {
+    background: radial-gradient(circle at 20% 20%, #1e293b, #020617 70%);
+}
+
+/* Glow */
+body::before {
+    content: "";
+    position: fixed;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(99,102,241,0.2), transparent);
+    filter: blur(120px);
+    top: -100px;
+    left: -100px;
+}
+
+/* GLASS */
+.glass {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* FADE */
+.fade {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.8s ease forwards;
+}
+
+@keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* INPUT */
+.input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    transition: 0.3s;
+}
+.input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.3);
+}
+
+/* BUTTON */
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+.btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
+    transform: translateX(-100%);
+    transition: 0.5s;
+}
+.btn:hover::before {
+    transform: translateX(100%);
+}
+
+</style>
+</head>
+
+<body class="text-white font-sans flex items-center justify-center min-h-screen px-4">
+
+<!-- CARD -->
+<div class="glass rounded-2xl p-8 w-full max-w-md fade">
+
+    <!-- LOGO -->
+    <h1 class="text-center text-xl font-bold tracking-widest mb-6">
+        O V E R C L O C K
+    </h1>
+
+    <h2 class="text-center text-2xl font-semibold mb-6">
+        Create Account
+    </h2>
+
+    <form method="POST" action="{% url 'register' %}" class="space-y-4">
+        {% csrf_token %}
+
+        <input type="text" name="name" placeholder="Full Name" required
+               class="input w-full px-4 py-2 rounded">
+
+        <input type="email" name="email" placeholder="Email Address" required
+               class="input w-full px-4 py-2 rounded">
+
+        <input type="password" name="password" placeholder="Password" maxlength="10" required
+               class="input w-full px-4 py-2 rounded">
+
+        <input type="text" name="location" placeholder="Address" required
+               class="input w-full px-4 py-2 rounded">
+
+        <input type="text" name="phone" placeholder="+91 99999 99999" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric"
+               class="input w-full px-4 py-2 rounded">
+
+        <button type="submit"
+                class="btn w-full bg-indigo-500 py-2 rounded-full text-sm font-semibold hover:bg-indigo-600 transition">
+            Register
+        </button>
+    </form>
+
+    <!-- FOOTER -->
+    <p class="text-center text-gray-400 text-sm mt-6">
+        Already have an account?
+        <a href="{% url 'login' %}" class="text-indigo-400 hover:underline">
+            Login
+        </a>
+    </p>
+
+</div>
+
+</body>
+</html>

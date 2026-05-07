@@ -1,0 +1,508 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Product - OVERCLOCK</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+/* ===== GLOBAL ===== */
+* {
+    cursor: default;
+}
+
+body {
+    background: radial-gradient(circle at 20% 20%, #1e293b, #020617 70%);
+    overflow-x: hidden;
+    user-select: none;
+}
+
+/* ===== CUSTOM SCROLLBAR ===== */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 20px;
+    border: 2px solid #0f172a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.8);
+}
+
+/* ===== BACKGROUND GLOW ===== */
+body::before {
+    content: "";
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15), transparent);
+    filter: blur(140px);
+    top: -100px;
+    left: -100px;
+    z-index: 0;
+}
+
+/* ===== GLASS CARD ===== */
+.glass {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ===== PAGE LOAD ANIMATION ===== */
+.fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.8s ease forwards;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== LOGO ===== */
+.logo {
+    letter-spacing: 8px;
+    transition: 0.3s ease;
+}
+
+.logo:hover {
+    letter-spacing: 12px;
+    transform: scale(1.03);
+}
+
+/* ===== NORMAL INPUTS ===== */
+.input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    transition: 0.3s ease;
+}
+
+/* ================= CATEGORY DROPDOWN PREMIUM THEME ================= */
+
+select.input {
+    width: 100%;
+    padding: 14px 50px 14px 16px;
+    border-radius: 14px;
+
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.10) !important;
+    color: white !important;
+
+    font-size: 14px;
+    transition: 0.3s ease;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    /* custom dropdown arrow */
+    background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 18px;
+}
+
+select.input:focus {
+    outline: none;
+    border-color: rgba(99,102,241,0.7) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    background: rgba(255,255,255,0.07) !important;
+}
+
+/* dropdown opened options */
+select.input option {
+    background: #0f172a;
+    color: white;
+    padding: 12px;
+}
+
+/* disabled placeholder option */
+select.input option[disabled] {
+    color: #94a3b8;
+}
+
+.input:focus {
+    outline: none;
+    border-color: rgba(99,102,241,0.7);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+}
+
+/* ===== MODERN NUMBER INPUT ===== */
+.number-input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: white;
+    transition: 0.3s ease;
+    appearance: none;
+    -moz-appearance: textfield;
+}
+
+.number-input::-webkit-outer-spin-button,
+.number-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.number-input:focus {
+    outline: none;
+    border-color: rgba(99,102,241,0.7);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    background: rgba(255,255,255,0.07);
+}
+
+.number-wrapper {
+    position: relative;
+}
+
+/* ₹ symbol */
+.currency-symbol {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #c7d2fe;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+/* Custom stepper */
+.custom-stepper {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.step-btn {
+    width: 26px;
+    height: 20px;
+    border-radius: 8px;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.25s ease;
+    font-size: 12px;
+    color: #c7d2fe;
+}
+
+.step-btn:hover {
+    background: rgba(99,102,241,0.3);
+    transform: scale(1.05);
+}
+
+/* ===== FILE UPLOAD ===== */
+.upload-box {
+    border: 2px dashed rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.03);
+    transition: 0.3s ease;
+    position: relative;
+    min-height: 240px;
+}
+
+.upload-box:hover {
+    border-color: rgba(99,102,241,0.7);
+    background: rgba(99,102,241,0.08);
+    transform: translateY(-2px);
+}
+
+.upload-box.dragover {
+    border-color: #6366f1;
+    background: rgba(99,102,241,0.12);
+}
+
+.file-input {
+    display: none;
+}
+
+/* ===== REMOVE BUTTON ===== */
+.remove-btn {
+    transition: 0.3s ease;
+}
+
+.remove-btn:hover {
+    transform: scale(1.08);
+}
+
+/* ===== BUTTON ===== */
+.btn {
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s ease;
+}
+
+.btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255,255,255,0.18),
+        transparent
+    );
+    transform: translateX(-100%);
+    transition: 0.6s;
+}
+
+.btn:hover::before {
+    transform: translateX(100%);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+</style>
+</head>
+
+<body class="text-white font-sans">
+
+<div class="max-w-4xl mx-auto pt-14 px-6 relative z-10">
+
+    <!-- APP NAME -->
+    <div class="text-center mb-10 fade-up">
+        <h1 class="logo text-3xl font-bold">
+            O V E R C L O C K
+        </h1>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="glass rounded-3xl p-8 shadow-2xl fade-up">
+
+        <h2 class="text-3xl font-semibold mb-8">
+            Add Product
+        </h2>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+
+            <!-- PRODUCT NAME -->
+            <input
+                type="text"
+                name="name"
+                placeholder="Product Name"
+                class="input w-full px-4 py-3 rounded-xl"
+                required
+            >
+
+            <!-- DESCRIPTION -->
+            <textarea
+                name="description"
+                class="input w-full px-4 py-3 rounded-xl h-32"
+                placeholder="Description"
+                required
+            ></textarea>
+
+            <!-- PRICE -->
+            <div class="number-wrapper">
+                <span class="currency-symbol">₹</span>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    name="price"
+                    placeholder="Price"
+                    class="number-input w-full pl-10 pr-16 py-3 rounded-xl"
+                    required
+                    id="priceInput"
+                >
+
+                <div class="custom-stepper">
+                    <button type="button" class="step-btn" onclick="stepUpField('priceInput')">▲</button>
+                    <button type="button" class="step-btn" onclick="stepDownField('priceInput')">▼</button>
+                </div>
+            </div>
+
+            <!-- QUANTITY -->
+            <div class="number-wrapper">
+                <input
+                    type="number"
+                    min="0"
+                    name="quantity"
+                    placeholder="Quantity"
+                    class="number-input w-full px-4 pr-16 py-3 rounded-xl"
+                    required
+                    id="quantityInput"
+                >
+
+                <div class="custom-stepper">
+                    <button type="button" class="step-btn" onclick="stepUpField('quantityInput')">▲</button>
+                    <button type="button" class="step-btn" onclick="stepDownField('quantityInput')">▼</button>
+                </div>
+            </div>
+
+            
+            <!-- CATEGORY -->
+            <select name="category" class="input" required>
+                <option value="" disabled selected>Select a category</option>
+                {% for cat in nav_categories %}
+                <option value="{{ cat.name }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- FILE UPLOAD -->
+            <div>
+                <label
+                    for="fileInput"
+                    id="uploadBox"
+                    class="upload-box rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer"
+                >
+
+                    <div id="uploadContent" class="flex flex-col items-center">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="24"
+                             height="24"
+                             fill="white"
+                             viewBox="0 0 16 16"
+                             class="mb-3">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.6a.5.5 0 0 1 1 0v2.6a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.6a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        </svg>
+
+                        <p class="text-sm text-gray-300">
+                            Drag & Drop image here or Click to Upload
+                        </p>
+
+                    </div>
+
+                    <input
+                        type="file"
+                        name="image"
+                        id="fileInput"
+                        class="file-input"
+                        accept="image/*"
+                        required
+                    >
+
+                    <div id="previewWrapper"
+                         class="hidden relative w-full mt-2">
+
+                        <img
+                            id="previewImage"
+                            class="w-full h-56 object-cover rounded-xl border border-white/10"
+                        >
+
+                        <button
+                            type="button"
+                            id="removeImage"
+                            class="remove-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white text-lg flex items-center justify-center"
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+                </label>
+            </div>
+
+            <!-- SUBMIT -->
+            <button
+                type="submit"
+                class="btn bg-indigo-500 px-8 py-3 rounded-full hover:bg-indigo-600 transition"
+            >
+                + Add
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+
+const fileInput = document.getElementById("fileInput");
+const previewImage = document.getElementById("previewImage");
+const previewWrapper = document.getElementById("previewWrapper");
+const removeImage = document.getElementById("removeImage");
+const uploadBox = document.getElementById("uploadBox");
+const uploadContent = document.getElementById("uploadContent");
+
+function showPreview(file) {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        previewImage.src = e.target.result;
+        uploadContent.classList.add("hidden");
+        previewWrapper.classList.remove("hidden");
+    };
+
+    reader.readAsDataURL(file);
+}
+
+fileInput.addEventListener("change", function () {
+    if (this.files && this.files[0]) {
+        showPreview(this.files[0]);
+    }
+});
+
+removeImage.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    fileInput.value = "";
+    previewImage.src = "";
+
+    previewWrapper.classList.add("hidden");
+    uploadContent.classList.remove("hidden");
+});
+
+uploadBox.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    uploadBox.classList.add("dragover");
+});
+
+uploadBox.addEventListener("dragleave", function() {
+    uploadBox.classList.remove("dragover");
+});
+
+uploadBox.addEventListener("drop", function(e) {
+    e.preventDefault();
+    uploadBox.classList.remove("dragover");
+
+    const files = e.dataTransfer.files;
+
+    if (files.length > 0) {
+        fileInput.files = files;
+        showPreview(files[0]);
+    }
+});
+
+function stepUpField(id) {
+    document.getElementById(id).stepUp();
+}
+
+function stepDownField(id) {
+    const field = document.getElementById(id);
+    if (parseFloat(field.value || 0) > 0) {
+        field.stepDown();
+    }
+}
+
+</script>
+
+</body>
+</html>

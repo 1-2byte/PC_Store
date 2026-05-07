@@ -1,0 +1,508 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK — Promotions</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; cursor:default; }
+body { background:radial-gradient(circle at 20% 20%,#1e293b,#020617 70%); min-height:100vh; color:white; font-family:sans-serif; overflow-x:hidden; }
+body::before { content:""; position:fixed; width:700px; height:700px; background:radial-gradient(circle,rgba(99,102,241,0.15),transparent); filter:blur(120px); top:-150px; left:-150px; z-index:0; }
+
+::-webkit-scrollbar { width:10px; }
+::-webkit-scrollbar-track { background:#020617; }
+::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.4); border-radius:20px; border:2px solid #020617; }
+::-webkit-scrollbar-thumb:hover { background:rgba(99,102,241,0.7); }
+
+.modal-box::-webkit-scrollbar { width:6px; }
+.modal-box::-webkit-scrollbar-track { background:transparent; }
+.modal-box::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.4); border-radius:20px; }
+.modal-box::-webkit-scrollbar-thumb:hover { background:rgba(99,102,241,0.7); }
+
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid rgba(255,255,255,0.07);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 32px 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.sidebar-logo { font-family:'Barlow',sans-serif; letter-spacing:6px; font-weight:600; font-size:13px; margin-bottom:6px; }
+.admin-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; padding:4px 12px; border-radius:999px; font-size:10px; letter-spacing:2px; font-weight:600; text-transform:uppercase; margin-bottom:36px; }
+.nav-section-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:10px; padding-left:14px; }
+.nav-item { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:14px; color:rgba(255,255,255,0.55); text-decoration:none; transition:0.25s ease; font-size:14px; margin-bottom:4px; cursor:pointer; }
+.nav-item:hover { background:rgba(255,255,255,0.06); color:white; transform:translateX(3px); }
+.nav-item.active { background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.3); color:white; }
+.nav-item i { width:18px; text-align:center; font-size:14px; }
+.sidebar-bottom { margin-top:auto; border-top:1px solid rgba(255,255,255,0.07); padding-top:20px; }
+
+.main { margin-left:260px; padding:36px 40px; position:relative; z-index:10; }
+.glass { background:rgba(255,255,255,0.045); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.2); }
+.input-field { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:10px 14px; border-radius:10px; outline:none; transition:0.3s ease; font-size:13px; }
+.input-field:focus { border-color:rgba(99,102,241,0.6); background:rgba(99,102,241,0.07); box-shadow:0 0 0 3px rgba(99,102,241,0.12); }
+.input-field::placeholder { color:rgba(255,255,255,0.2); }
+.label { display:block; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.35); margin-bottom:6px; }
+select.input-field { cursor:pointer; }
+
+.status-active   { background:rgba(34,197,94,0.12);  border:1px solid rgba(34,197,94,0.3);  color:#86efac; }
+.status-inactive { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.35); }
+.status-expired  { background:rgba(239,68,68,0.12);  border:1px solid rgba(239,68,68,0.3);  color:#fca5a5; }
+.badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:10px; font-weight:600; letter-spacing:0.5px; }
+
+.type-pct  { background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; }
+.type-free { background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:#d8b4fe; }
+
+input,textarea { cursor:text; }
+button,a { cursor:pointer; }
+
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
+.modal-box { background:#0b1120; border:1px solid rgba(255,255,255,0.1); border-radius:24px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; padding:32px; }
+.modal-box::-webkit-scrollbar { width:6px; }
+.modal-box::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:10px; }
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+    <div>
+        <h1 class="sidebar-logo">O V E R C L O C K</h1>
+        <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Admin</span>
+    </div>
+    <p class="nav-section-label">Dashboard</p>
+    <a href="{% url 'adminhome' %}" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Overview</a>
+    <p class="nav-section-label" style="margin-top:20px;">Manage</p>
+    <a href="{% url 'products' %}"  class="nav-item"><i class="fa-solid fa-box"></i> Products</a>
+    <a href="{% url 'category_list' %}" class="nav-item"><i class="fa-solid fa-tags"></i> Categories</a>
+    <a href="{% url 'admin_orders' %}"  class="nav-item"><i class="fa-solid fa-receipt"></i> Orders</a>
+    <a href="{% url 'promo_list' %}"    class="nav-item active"><i class="fa-solid fa-tag"></i> Promotions</a>
+    <a href="{% url 'userlist' %}"      class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
+    <p class="nav-section-label" style="margin-top:20px;">Store</p>
+    <a href="{% url 'index' %}"        class="nav-item"><i class="fa-solid fa-store"></i> View Store</a>
+    <a href="{% url 'all_products' %}" class="nav-item"><i class="fa-solid fa-list"></i> All Products</a>
+    <div class="sidebar-bottom">
+        <a href="{% url 'index' %}"       class="nav-item" style="color:rgba(245,158,11,0.7);"><i class="fa-solid fa-store"></i> Exit to Store</a>
+        <a href="{% url 'adminlogout' %}" class="nav-item" style="color:rgba(239,68,68,0.7);"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold mb-1">Promotions</h2>
+            <p class="text-gray-400 text-sm">Create coupon codes, percentage discounts and free-product offers</p>
+        </div>
+        <button onclick="document.getElementById('addModal').classList.remove('hidden')"
+                class="px-5 py-3 rounded-xl text-sm font-semibold transition hover:-translate-y-0.5"
+                style="background:linear-gradient(135deg,#6366f1,#4338ca); box-shadow:0 4px 20px rgba(99,102,241,0.3);">
+            <i class="fa-solid fa-plus mr-2"></i> New Promotion
+        </button>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="mb-6 px-5 py-4 rounded-2xl text-sm font-medium flex items-center gap-3
+        {% if message.tags == 'error' %}bg-red-500/10 border border-red-500/25 text-red-300
+        {% else %}bg-green-500/10 border border-green-500/25 text-green-300{% endif %}">
+        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- ── Promo List ── -->
+    {% if promos %}
+    <div class="space-y-4">
+        {% for promo in promos %}
+        {% with is_valid=promo.is_valid_now %}
+        <div class="glass rounded-2xl p-6">
+            <div class="flex flex-wrap justify-between items-start gap-4 mb-4">
+
+                <!-- Left: name, type, code -->
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                         style="{% if promo.promo_type == 'PERCENTAGE' %}background:rgba(99,102,241,0.2);{% else %}background:rgba(168,85,247,0.2);{% endif %}">
+                        <i class="fa-solid {% if promo.promo_type == 'PERCENTAGE' %}fa-percent{% else %}fa-gift{% endif %} text-lg
+                           {% if promo.promo_type == 'PERCENTAGE' %}text-indigo-400{% else %}text-purple-400{% endif %}"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap mb-1">
+                            <h3 class="text-lg font-semibold">{{ promo.name }}</h3>
+                            <span class="badge {% if promo.promo_type == 'PERCENTAGE' %}type-pct{% else %}type-free{% endif %}">
+                                {{ promo.get_promo_type_display }}
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-400 mb-2">{{ promo.description }}</p>
+                        <div class="flex items-center gap-2 flex-wrap text-xs">
+                            <span class="font-mono px-3 py-1 rounded-lg font-bold tracking-widest"
+                                  style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.2);">
+                                {{ promo.coupon_code }}
+                            </span>
+                            {% if promo.applies_to_category %}
+                            <span class="px-3 py-1 rounded-lg" style="background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5);">
+                                <i class="fa-solid fa-box text-xs mr-1"></i>{{ promo.applies_to_category }}
+                            </span>
+                            {% else %}
+                            <span class="px-3 py-1 rounded-lg" style="background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5);">
+                                <i class="fa-solid fa-globe text-xs mr-1"></i>Sitewide
+                            </span>
+                            {% endif %}
+                            {% if promo.promo_type == 'PERCENTAGE' %}
+                            <span class="px-3 py-1 rounded-lg text-green-400"
+                                  style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2);">
+                                {{ promo.discount_percent }}% off
+                                {% if promo.max_discount_amount %}
+                                <span class="text-gray-400">(max ₹{{ promo.max_discount_amount|floatformat:0 }})</span>
+                                {% endif %}
+                            </span>
+                            {% else %}
+                            <span class="px-3 py-1 rounded-lg text-purple-400"
+                                  style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.2);">
+                                Free: {{ promo.free_product.name|default:"—" }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: status + dates + actions -->
+                <div class="flex flex-col items-end gap-3">
+                    <!-- Status badge -->
+                    <span class="badge {% if is_valid %}status-active{% elif not promo.is_active %}status-inactive{% else %}status-expired{% endif %}">
+                        <i class="fa-solid fa-circle text-[6px]"></i>
+                        {% if is_valid %}Active{% elif not promo.is_active %}Inactive{% else %}Expired{% endif %}
+                    </span>
+
+                    <!-- Dates -->
+                    <div class="text-xs text-gray-500 text-right">
+                        <p><i class="fa-regular fa-calendar mr-1"></i>{{ promo.start_date|date:"d M Y" }} → {{ promo.end_date|date:"d M Y" }}</p>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="flex items-center gap-2">
+                        <!-- Toggle -->
+                        <form method="POST" action="{% url 'toggle_promo' promo.id %}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="px-4 py-2 rounded-xl text-xs font-semibold transition hover:scale-105"
+                                    style="{% if promo.is_active %}background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#fca5a5;{% else %}background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); color:#86efac;{% endif %}">
+                                <i class="fa-solid {% if promo.is_active %}fa-pause{% else %}fa-play{% endif %} mr-1"></i>
+                                {% if promo.is_active %}Deactivate{% else %}Activate{% endif %}
+                            </button>
+                        </form>
+                        <!-- Edit -->
+                        <button onclick="openEditModal(
+                            {{ promo.id }},
+                            '{{ promo.name|escapejs }}',
+                            '{{ promo.description|escapejs }}',
+                            '{{ promo.promo_type }}',
+                            '{{ promo.coupon_code }}',
+                            '{{ promo.applies_to_category|default:'' }}',
+                            '{{ promo.start_date|date:'Y-m-d\TH:i' }}',
+                            '{{ promo.end_date|date:'Y-m-d\TH:i' }}',
+                            '{{ promo.discount_percent|default:'' }}',
+                            '{{ promo.max_discount_amount|default:'' }}',
+                            '{{ promo.free_product_id|default:'' }}'
+                        )"
+                                class="w-9 h-9 rounded-xl flex items-center justify-center transition hover:scale-110"
+                                style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.2);">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                        <!-- Delete -->
+                        <form method="POST" action="{% url 'delete_promo' promo.id %}"
+                              onsubmit="return confirm('Delete promotion \'{{ promo.name }}\'? This cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="w-9 h-9 rounded-xl flex items-center justify-center transition hover:scale-110"
+                                    style="background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.2);">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="glass rounded-3xl p-20 text-center max-w-xl mx-auto">
+        <i class="fa-solid fa-tag text-4xl mb-4 block opacity-20"></i>
+        <h2 class="text-2xl font-semibold mb-2">No promotions yet</h2>
+        <p class="text-gray-500 text-sm mb-6">Create your first promotion to start offering discounts.</p>
+        <button onclick="document.getElementById('addModal').classList.remove('hidden')"
+                class="inline-block px-6 py-3 rounded-xl text-sm font-semibold"
+                style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc;">
+            <i class="fa-solid fa-plus mr-2"></i> Create Promotion
+        </button>
+    </div>
+    {% endif %}
+
+</main>
+
+<!-- ══════════════════ ADD MODAL ══════════════════ -->
+<div id="addModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold">New Promotion</h3>
+            <button onclick="document.getElementById('addModal').classList.add('hidden')"
+                    class="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-white/10 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'add_promo' %}">
+            {% csrf_token %}
+            <div class="space-y-4">
+
+                <div>
+                    <label class="label">Promotion Name</label>
+                    <input type="text" name="name" class="input-field" placeholder="e.g. GPU Summer Sale" required>
+                </div>
+
+                <div>
+                    <label class="label">Description (shown on banners)</label>
+                    <input type="text" name="description" class="input-field" placeholder="e.g. 20% off all GPUs this week!">
+                </div>
+
+                <div>
+                    <label class="label">Coupon Code</label>
+                    <input type="text" name="coupon_code" class="input-field font-mono tracking-widest uppercase"
+                           placeholder="e.g. GPU20" required
+                           oninput="this.value = this.value.toUpperCase()">
+                    <p class="text-xs text-gray-600 mt-1">Must be unique. Users enter this at checkout.</p>
+                </div>
+
+                <div>
+                    <label class="label">Promotion Type</label>
+                    <select name="promo_type" class="input-field" id="addPromoType" onchange="toggleAddFields()">
+                        <option value="PERCENTAGE">Percentage Off</option>
+                        <option value="FREE_PRODUCT">Free Product with Purchase</option>
+                    </select>
+                </div>
+
+                <!-- PERCENTAGE fields -->
+                <div id="addPctFields">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="label">Discount % <span class="text-red-400">*</span></label>
+                            <input type="number" name="discount_percent" class="input-field" placeholder="e.g. 20" min="1" max="99">
+                        </div>
+                        <div>
+                            <label class="label">Max Discount (₹) <span class="text-gray-600">optional</span></label>
+                            <input type="number" name="max_discount_amount" class="input-field" placeholder="e.g. 20000 or leave blank">
+                            <p class="text-xs text-gray-600 mt-1">Leave blank = no cap on discount.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FREE PRODUCT fields -->
+                <div id="addFreeFields" class="hidden">
+                    <label class="label">Free Product <span class="text-red-400">*</span></label>
+                    <select name="free_product" class="input-field">
+                        <option value="">— Select free product —</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }} (₹{{ product.price }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="label">Applies to Category <span class="text-gray-600">optional</span></label>
+                    <select name="applies_to_category" class="input-field">
+                        <option value="">— All products (sitewide) —</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.name }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-gray-600 mt-1">For free product promos: user must have this category in cart.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="label">Start Date & Time</label>
+                        <input type="datetime-local" name="start_date" class="input-field" required>
+                    </div>
+                    <div>
+                        <label class="label">End Date & Time</label>
+                        <input type="datetime-local" name="end_date" class="input-field" required>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="submit"
+                            class="flex-1 py-3 rounded-xl font-semibold text-sm tracking-wider transition hover:-translate-y-0.5"
+                            style="background:linear-gradient(135deg,#6366f1,#4338ca); box-shadow:0 4px 20px rgba(99,102,241,0.3);">
+                        <i class="fa-solid fa-plus mr-2"></i> Create Promotion
+                    </button>
+                    <button type="button" onclick="document.getElementById('addModal').classList.add('hidden')"
+                            class="px-6 py-3 rounded-xl text-sm font-semibold transition hover:-translate-y-0.5"
+                            style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
+                        Cancel
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════ EDIT MODAL ══════════════════ -->
+<div id="editModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold">Edit Promotion</h3>
+            <button onclick="document.getElementById('editModal').classList.add('hidden')"
+                    class="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-white/10 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST" id="editForm" action="">
+            {% csrf_token %}
+            <div class="space-y-4">
+
+                <div>
+                    <label class="label">Promotion Name</label>
+                    <input type="text" name="name" id="editName" class="input-field" required>
+                </div>
+
+                <div>
+                    <label class="label">Description</label>
+                    <input type="text" name="description" id="editDescription" class="input-field">
+                </div>
+
+                <div>
+                    <label class="label">Coupon Code</label>
+                    <input type="text" name="coupon_code" id="editCode" class="input-field font-mono tracking-widest uppercase"
+                           oninput="this.value = this.value.toUpperCase()">
+                </div>
+
+                <div>
+                    <label class="label">Promotion Type</label>
+                    <select name="promo_type" class="input-field" id="editPromoType" onchange="toggleEditFields()">
+                        <option value="PERCENTAGE">Percentage Off</option>
+                        <option value="FREE_PRODUCT">Free Product with Purchase</option>
+                    </select>
+                </div>
+
+                <div id="editPctFields">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="label">Discount %</label>
+                            <input type="number" name="discount_percent" id="editPct" class="input-field" min="1" max="99">
+                        </div>
+                        <div>
+                            <label class="label">Max Discount (₹)</label>
+                            <input type="number" name="max_discount_amount" id="editMaxDiscount" class="input-field" placeholder="Leave blank = no cap">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="editFreeFields" class="hidden">
+                    <label class="label">Free Product</label>
+                    <select name="free_product" id="editFreeProduct" class="input-field">
+                        <option value="">— Select free product —</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }} (₹{{ product.price }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="label">Applies to Category</label>
+                    <select name="applies_to_category" id="editCategory" class="input-field">
+                        <option value="">— All products (sitewide) —</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.name }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="label">Start Date & Time</label>
+                        <input type="datetime-local" name="start_date" id="editStart" class="input-field" required>
+                    </div>
+                    <div>
+                        <label class="label">End Date & Time</label>
+                        <input type="datetime-local" name="end_date" id="editEnd" class="input-field" required>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="submit"
+                            class="flex-1 py-3 rounded-xl font-semibold text-sm tracking-wider transition hover:-translate-y-0.5"
+                            style="background:linear-gradient(135deg,#6366f1,#4338ca); box-shadow:0 4px 20px rgba(99,102,241,0.3);">
+                        <i class="fa-solid fa-floppy-disk mr-2"></i> Save Changes
+                    </button>
+                    <button type="button" onclick="document.getElementById('editModal').classList.add('hidden')"
+                            class="px-6 py-3 rounded-xl text-sm font-semibold transition hover:-translate-y-0.5"
+                            style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// ── Add modal type toggle ──
+function toggleAddFields() {
+    const type = document.getElementById('addPromoType').value;
+    document.getElementById('addPctFields').classList.toggle('hidden',  type !== 'PERCENTAGE');
+    document.getElementById('addFreeFields').classList.toggle('hidden', type !== 'FREE_PRODUCT');
+}
+
+// ── Edit modal populate & type toggle ──
+function openEditModal(id, name, desc, type, code, cat, start, end, pct, maxD, freeId) {
+    document.getElementById('editForm').action = `/adminhome/promos/edit/${id}/`;
+    document.getElementById('editName').value        = name;
+    document.getElementById('editDescription').value = desc;
+    document.getElementById('editPromoType').value   = type;
+    document.getElementById('editCode').value        = code;
+    document.getElementById('editCategory').value    = cat;
+    document.getElementById('editStart').value       = start;
+    document.getElementById('editEnd').value         = end;
+    document.getElementById('editPct').value         = pct;
+    document.getElementById('editMaxDiscount').value = maxD;
+    if (freeId) document.getElementById('editFreeProduct').value = freeId;
+    toggleEditFields();
+    document.getElementById('editModal').classList.remove('hidden');
+}
+
+function toggleEditFields() {
+    const type = document.getElementById('editPromoType').value;
+    document.getElementById('editPctFields').classList.toggle('hidden',  type !== 'PERCENTAGE');
+    document.getElementById('editFreeFields').classList.toggle('hidden', type !== 'FREE_PRODUCT');
+}
+
+// Close modals on overlay click
+['addModal','editModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) {
+        if (e.target === this) this.classList.add('hidden');
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK | My Orders</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; cursor:default; }
+body { font-family:Inter,sans-serif; background:radial-gradient(circle at top left,rgba(99,102,241,.10),transparent 40%),radial-gradient(circle at top right,rgba(255,255,255,.04),transparent 30%),#050816; color:white; overflow-x:hidden; min-height:100vh; }
+a, button { cursor:pointer; text-decoration:none; }
+input { cursor:text; }
+::-webkit-scrollbar { width:10px; }
+::-webkit-scrollbar-track { background:#050816; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:20px; }
+.glass { background:rgba(255,255,255,0.035); backdrop-filter:blur(18px); border:1px solid rgba(255,255,255,0.06); }
+.build-btn { background:linear-gradient(135deg,#6366f1,#818cf8); transition:.3s ease; }
+.build-btn:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(99,102,241,.22); }
+
+/* Status badge colors */
+.badge-Pending    { background:rgba(234,179,8,0.15);  border:1px solid rgba(234,179,8,0.3);  color:#fde047; }
+.badge-Processing { background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#93c5fd; }
+.badge-Shipped    { background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:#d8b4fe; }
+.badge-Delivered  { background:rgba(34,197,94,0.15);  border:1px solid rgba(34,197,94,0.3);  color:#86efac; }
+
+/* Stepper */
+.step-done   { background:rgba(99,102,241,1);   border-color:rgba(99,102,241,1); }
+.step-active { background:rgba(99,102,241,0.3); border-color:rgba(99,102,241,0.8); box-shadow:0 0 12px rgba(99,102,241,0.5); }
+.step-idle   { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.15); }
+.line-done   { background:rgba(99,102,241,1); }
+.line-idle   { background:rgba(255,255,255,0.1); }
+
+/* Expand/collapse */
+.order-body { display:none; }
+.order-body.open { display:block; }
+.chevron { transition:transform 0.3s ease; }
+.chevron.open { transform:rotate(180deg); }
+
+/* Search highlight */
+.order-card { transition:0.25s ease; }
+.order-card.hidden-card { display:none; }
+
+/* Fade up */
+.fade-up { opacity:0; transform:translateY(18px); animation:fadeUp 0.5s ease forwards; }
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-black/20">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+        <a href="{% url 'index' %}" class="text-xl md:text-2xl font-semibold tracking-[0.45em]">OVERCLOCK</a>
+        <nav class="hidden lg:flex items-center gap-8 text-sm text-gray-300">
+            <a href="{% url 'index' %}"        class="hover:text-white transition">Home</a>
+            <a href="{% url 'all_products' %}" class="hover:text-white transition">Products</a>
+            <a href="{% url 'cart' %}"         class="hover:text-white transition"><i class="fa-solid fa-cart-shopping"></i></a>
+            <a href="{% url 'profile' %}"      class="hover:text-white transition"><i class="fa-regular fa-user text-lg"></i></a>
+        </nav>
+        <a href="{% url 'all_products' %}" class="build-btn px-6 py-3 rounded-2xl text-sm font-medium">Shop More</a>
+    </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-6 pt-12 pb-24">
+
+    <!-- Page Title -->
+    <div class="mb-10 fade-up">
+        <p class="text-sm text-indigo-300 mb-2 tracking-[0.25em] uppercase">Account</p>
+        <h1 class="text-4xl font-semibold">My Orders</h1>
+        <p class="text-gray-400 mt-2 text-sm">Track and review all your purchases.</p>
+    </div>
+
+    {% if orders %}
+
+    <!-- Search Bar -->
+    <div class="fade-up mb-8" style="animation-delay:100ms">
+        <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+            <input type="text" id="orderSearch"
+                   placeholder="Search by Order ID or product name..."
+                   class="w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm text-white placeholder-gray-500 outline-none transition"
+                   style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);"
+                   oninput="filterOrders(this.value)">
+        </div>
+        <p id="noResults" class="text-center text-gray-500 text-sm mt-6 hidden">No orders match your search.</p>
+    </div>
+
+    <!-- Orders List -->
+    <div class="space-y-4" id="ordersList">
+        {% for order in orders %}
+        <div class="order-card glass rounded-3xl overflow-hidden fade-up"
+             style="animation-delay:{{ forloop.counter }}50ms"
+             data-order-id="{{ order.order_id|lower }}"
+             data-items="{% for item in order.items.all %}{{ item.product_name|lower }} {% endfor %}">
+
+            <!-- Collapsed Header (always visible) -->
+            <button class="w-full text-left px-6 py-5 flex items-center justify-between gap-4"
+                    onclick="toggleOrder(this)">
+                <div class="flex items-center gap-4 flex-wrap">
+                    <!-- Order ID -->
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-widest mb-0.5">Order ID</p>
+                        <p class="font-bold text-indigo-400 tracking-wider text-sm">{{ order.order_id }}</p>
+                    </div>
+                    <!-- Divider -->
+                    <div class="w-px h-8 bg-white/10 hidden sm:block"></div>
+                    <!-- Date -->
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-widest mb-0.5">Date</p>
+                        <p class="text-sm text-white">{{ order.created_at|date:"d M Y" }}</p>
+                    </div>
+                    <!-- Divider -->
+                    <div class="w-px h-8 bg-white/10 hidden sm:block"></div>
+                    <!-- Grand Total -->
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-widest mb-0.5">Total</p>
+                        <p class="text-sm font-semibold text-white">₹{{ order.grand_total }}</p>
+                    </div>
+                    <!-- Divider -->
+                    <div class="w-px h-8 bg-white/10 hidden sm:block"></div>
+                    <!-- Status Badge -->
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold badge-{{ order.status }}">
+                        <i class="fa-solid fa-circle text-[5px]"></i> {{ order.status }}
+                    </span>
+                </div>
+                <!-- Chevron -->
+                <i class="fa-solid fa-chevron-down chevron text-gray-500 flex-shrink-0 text-sm"></i>
+            </button>
+
+            <!-- Expanded Body -->
+            <div class="order-body border-t border-white/5">
+                <div class="px-6 py-6 space-y-8">
+
+                    <!-- STEPPER -->
+                    {% with status=order.status %}
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-widest mb-5">Order Status</p>
+                        <div class="flex items-center">
+
+                            <!-- Step 1: Pending -->
+                            <div class="flex flex-col items-center flex-shrink-0">
+                                <div class="w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-bold
+                                    {% if status == 'Pending' %}step-active
+                                    {% elif status == 'Processing' or status == 'Shipped' or status == 'Delivered' %}step-done
+                                    {% else %}step-idle{% endif %}">
+                                    {% if status == 'Processing' or status == 'Shipped' or status == 'Delivered' %}
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-clock text-xs"></i>
+                                    {% endif %}
+                                </div>
+                                <p class="text-xs mt-2 font-medium {% if status == 'Pending' %}text-indigo-300{% elif status == 'Processing' or status == 'Shipped' or status == 'Delivered' %}text-indigo-400{% else %}text-gray-600{% endif %}">Pending</p>
+                            </div>
+
+                            <!-- Line 1-->
+                            <div class="flex-1 h-0.5 mx-1
+                                {% if status == 'Processing' or status == 'Shipped' or status == 'Delivered' %}line-done{% else %}line-idle{% endif %}">
+                            </div>
+
+                            <!-- Step 2: Processing -->
+                            <div class="flex flex-col items-center flex-shrink-0">
+                                <div class="w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-bold
+                                    {% if status == 'Processing' %}step-active
+                                    {% elif status == 'Shipped' or status == 'Delivered' %}step-done
+                                    {% else %}step-idle{% endif %}">
+                                    {% if status == 'Shipped' or status == 'Delivered' %}
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-gear text-xs"></i>
+                                    {% endif %}
+                                </div>
+                                <p class="text-xs mt-2 font-medium {% if status == 'Processing' %}text-indigo-300{% elif status == 'Shipped' or status == 'Delivered' %}text-indigo-400{% else %}text-gray-600{% endif %}">Processing</p>
+                            </div>
+
+                            <!-- Line 2 -->
+                            <div class="flex-1 h-0.5 mx-1
+                                {% if status == 'Shipped' or status == 'Delivered' %}line-done{% else %}line-idle{% endif %}">
+                            </div>
+
+                            <!-- Step 3: Shipped -->
+                            <div class="flex flex-col items-center flex-shrink-0">
+                                <div class="w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-bold
+                                    {% if status == 'Shipped' %}step-active
+                                    {% elif status == 'Delivered' %}step-done
+                                    {% else %}step-idle{% endif %}">
+                                    {% if status == 'Delivered' %}
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-truck text-xs"></i>
+                                    {% endif %}
+                                </div>
+                                <p class="text-xs mt-2 font-medium {% if status == 'Shipped' %}text-indigo-300{% elif status == 'Delivered' %}text-indigo-400{% else %}text-gray-600{% endif %}">Shipped</p>
+                            </div>
+
+                            <!-- Line 3 -->
+                            <div class="flex-1 h-0.5 mx-1
+                                {% if status == 'Delivered' %}line-done{% else %}line-idle{% endif %}">
+                            </div>
+
+                            <!-- Step 4: Delivered -->
+                            <div class="flex flex-col items-center flex-shrink-0">
+                                <div class="w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-bold
+                                    {% if status == 'Delivered' %}step-done{% else %}step-idle{% endif %}">
+                                    {% if status == 'Delivered' %}
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-box-open text-xs"></i>
+                                    {% endif %}
+                                </div>
+                                <p class="text-xs mt-2 font-medium {% if status == 'Delivered' %}text-green-400{% else %}text-gray-600{% endif %}">Delivered</p>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% endwith %}
+
+                    <!-- ITEMS -->
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-widest mb-4">Items Ordered</p>
+                        <div class="space-y-3">
+                            {% for item in order.items.all %}
+                            <div class="flex items-center gap-4 p-3 rounded-2xl" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05);">
+                                <div class="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
+                                     style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);">
+                                    {% if item.product_image %}
+                                        <img src="{{ item.product_image }}" class="w-full h-full object-contain p-1">
+                                    {% else %}
+                                        <i class="fa-solid fa-box text-gray-600"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-white truncate">{{ item.product_name }}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">Qty: {{ item.quantity }} &nbsp;·&nbsp; ₹{{ item.price|floatformat:0 }} each</p>
+                                    {% if item.is_digital %}
+                                    <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full" style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc;">
+                                        <i class="fa-solid fa-envelope mr-1"></i> Digital — Via Email
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <p class="text-sm font-semibold text-white flex-shrink-0">₹{{ item.total|floatformat:0 }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- LICENSE KEY (digital orders) -->
+                    {% if order.license_key %}
+                    <div class="rounded-2xl p-5" style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.25);">
+                        <p class="text-xs text-gray-500 uppercase tracking-widest mb-3">
+                            <i class="fa-solid fa-key mr-1 text-indigo-400"></i> License Key
+                        </p>
+                        <p class="font-mono text-base text-indigo-300 tracking-widest break-all">{{ order.license_key }}</p>
+                        <p class="text-xs text-gray-500 mt-2">Sent to {{ order.delivery_email }}</p>
+                    </div>
+                    {% else %}
+                    {% for item in order.items.all %}{% if item.is_digital %}
+                    <div class="rounded-2xl p-4" style="background:rgba(99,102,241,0.05); border:1px solid rgba(99,102,241,0.15);">
+                        <p class="text-xs text-indigo-400 uppercase tracking-widest mb-1"><i class="fa-solid fa-envelope mr-1"></i> Digital Delivery Pending</p>
+                        <p class="text-sm text-gray-400">License key will be sent to <span class="text-white">{{ order.delivery_email }}</span> once processed.</p>
+                    </div>
+                    {% endif %}{% endfor %}
+                    {% endif %}
+
+                    <!-- PAYMENT & DELIVERY -->
+                    <div class="grid sm:grid-cols-2 gap-4">
+
+                        <!-- Payment -->
+                        <div class="rounded-2xl p-4" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+                            <p class="text-xs text-gray-500 uppercase tracking-widest mb-3">Payment</p>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Method</span>
+                                    <span class="text-white">{{ order.get_payment_method_display }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Subtotal</span>
+                                    <span class="text-white">₹{{ order.subtotal }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Delivery</span>
+                                    {% if order.delivery_fee == 0 %}
+                                    <span class="text-green-400">Free</span>
+                                    {% else %}
+                                    <span class="text-white">₹{{ order.delivery_fee }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex justify-between border-t border-white/5 pt-2 font-semibold">
+                                    <span class="text-gray-300">Total</span>
+                                    <span class="text-white">₹{{ order.grand_total }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Address -->
+                        <div class="rounded-2xl p-4" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+                            <p class="text-xs text-gray-500 uppercase tracking-widest mb-3">Delivery Address</p>
+                            <div class="space-y-1 text-sm">
+                                <p class="text-white font-medium">{{ order.full_name }}</p>
+                                <p class="text-gray-400">{{ order.address }}</p>
+                                <p class="text-gray-400">{{ order.city }}{% if order.pincode and order.pincode != 'N/A' %} — {{ order.pincode }}{% endif %}</p>
+                                <p class="text-gray-400">{{ order.phone }}</p>
+                                {% if order.address == 'Digital Product' %}
+                                <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full" style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc;">
+                                    <i class="fa-solid fa-key mr-1"></i> Digital Delivery
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+
+    <div class="glass rounded-3xl p-20 text-center fade-up max-w-xl mx-auto">
+        <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+             style="background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2);">
+            <i class="fa-solid fa-box-open text-3xl text-indigo-400"></i>
+        </div>
+        <h2 class="text-2xl font-semibold mb-2">No orders yet</h2>
+        <p class="text-gray-400 mb-8 text-sm">Looks like you haven't placed any orders.</p>
+        <a href="{% url 'all_products' %}" class="inline-block build-btn px-8 py-4 rounded-2xl text-sm font-medium">Shop Now</a>
+    </div>
+
+    {% endif %}
+
+</main>
+
+<footer class="text-center py-10 text-gray-500 text-sm">© 2026 OVERCLOCK — Built for Performance</footer>
+
+<script>
+function toggleOrder(btn) {
+    const body    = btn.nextElementSibling;
+    const chevron = btn.querySelector('.chevron');
+    const isOpen  = body.classList.contains('open');
+    // close all others
+    document.querySelectorAll('.order-body.open').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.chevron.open').forEach(c => c.classList.remove('open'));
+    // toggle clicked
+    if (!isOpen) {
+        body.classList.add('open');
+        chevron.classList.add('open');
+    }
+}
+
+function filterOrders(query) {
+    const q = query.trim().toLowerCase();
+    let visible = 0;
+    document.querySelectorAll('.order-card').forEach(card => {
+        const id    = card.dataset.orderId  || '';
+        const items = card.dataset.items    || '';
+        const match = id.includes(q) || items.includes(q);
+        card.classList.toggle('hidden-card', q !== '' && !match);
+        if (q === '' || match) visible++;
+    });
+    document.getElementById('noResults').classList.toggle('hidden', visible > 0);
+}
+</script>
+
+</body>
+</html>

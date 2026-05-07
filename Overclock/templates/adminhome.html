@@ -1,0 +1,763 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK — Admin Dashboard</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: default;
+}
+
+body {
+    background: radial-gradient(circle at 20% 20%, #1e293b, #020617 70%);
+    min-height: 100vh;
+    color: white;
+    font-family: sans-serif;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15), transparent);
+    filter: blur(120px);
+    top: -150px;
+    left: -150px;
+    z-index: 0;
+}
+::-webkit-scrollbar { width:10px; }
+::-webkit-scrollbar-track { background:#020617; }
+::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.4); border-radius:20px; border:2px solid #020617; }
+::-webkit-scrollbar-thumb:hover { background:rgba(99,102,241,0.7); }
+
+.modal-box::-webkit-scrollbar { width:6px; }
+.modal-box::-webkit-scrollbar-track { background:transparent; }
+.modal-box::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.4); border-radius:20px; }
+.modal-box::-webkit-scrollbar-thumb:hover { background:rgba(99,102,241,0.7); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid rgba(255,255,255,0.07);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 32px 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar-logo {
+    font-family: 'Barlow', sans-serif;
+    letter-spacing: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 6px;
+    white-space: nowrap;
+}
+
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #a5b4fc;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 36px;
+}
+
+.nav-section-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    margin-bottom: 10px;
+    padding-left: 14px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    transition: 0.25s ease;
+    font-size: 14px;
+    margin-bottom: 4px;
+    cursor: pointer;
+}
+
+.nav-item:hover {
+    background: rgba(255,255,255,0.06);
+    color: white;
+    transform: translateX(3px);
+}
+
+.nav-item.active {
+    background: rgba(99,102,241,0.18);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: white;
+}
+
+.nav-item i {
+    width: 18px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding-top: 20px;
+}
+
+/* ── MAIN ── */
+.main {
+    margin-left: 260px;
+    padding: 36px 40px;
+    position: relative;
+    z-index: 10;
+}
+
+/* ── GLASS ── */
+.glass {
+    background: rgba(255,255,255,0.045);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+/* ── STAT CARDS ── */
+.stat-card {
+    border-radius: 24px;
+    padding: 26px 28px;
+    transition: 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 18px;
+}
+
+.stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.stat-label {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+}
+
+/* ── QUICK ACTION CARDS ── */
+.action-card {
+    border-radius: 20px;
+    padding: 22px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-decoration: none;
+    color: white;
+    transition: 0.3s ease;
+    cursor: pointer;
+}
+
+.action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.action-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* ── ACTIVITY TABLE ── */
+.activity-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.activity-table th {
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    padding: 0 16px 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.activity-table td {
+    padding: 16px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: 0.2s;
+}
+
+.activity-table tr:hover td {
+    background: rgba(255,255,255,0.03);
+    color: white;
+}
+
+.activity-table tr:last-child td {
+    border-bottom: none;
+}
+
+.badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ── FADE IN ── */
+.fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.6s ease forwards;
+}
+.fade-up:nth-child(1) { animation-delay: 0.05s; }
+.fade-up:nth-child(2) { animation-delay: 0.12s; }
+.fade-up:nth-child(3) { animation-delay: 0.19s; }
+.fade-up:nth-child(4) { animation-delay: 0.26s; }
+
+@keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+input, textarea, select { cursor: text; }
+button, a { cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<aside class="sidebar">
+
+    <div>
+        <h1 class="sidebar-logo">O V E R C L O C K</h1>
+        <span class="admin-badge">
+            <i class="fa-solid fa-shield-halved"></i>
+            Admin
+        </span>
+    </div>
+
+    <p class="nav-section-label">Dashboard</p>
+    <a href="{% url 'adminhome' %}" class="nav-item active">
+        <i class="fa-solid fa-gauge-high"></i>
+        Overview
+    </a>
+
+    <p class="nav-section-label" style="margin-top:20px;">Manage</p>
+    <a href="{% url 'products' %}" class="nav-item">
+        <i class="fa-solid fa-box"></i>
+    Products
+    </a>
+    <a href="{% url 'category_list' %}" class="nav-item">
+        <i class="fa-solid fa-tags"></i>
+        Categories
+    </a>
+    <a href="{% url 'promo_list' %}" class="nav-item">
+        <i class="fa-solid fa-tag"></i> Promotions
+    </a>
+    <a href="{% url 'admin_orders' %}" class="nav-item">
+        <i class="fa-solid fa-receipt"></i>
+        Orders
+    </a>
+    <a href="{% url 'userlist' %}" class="nav-item">
+        <i class="fa-solid fa-users"></i>
+        Users
+    </a>
+
+    <p class="nav-section-label" style="margin-top:20px;">Store</p>
+    <a href="{% url 'index' %}" class="nav-item">
+        <i class="fa-solid fa-store"></i>
+        View Store
+    </a>
+    <a href="{% url 'all_products' %}" class="nav-item">
+        <i class="fa-solid fa-list"></i>
+        All Products
+    </a>
+
+    <div class="sidebar-bottom">
+    <a href="{% url 'index' %}" class="nav-item" style="color: rgba(245,158,11,0.7);">
+        <i class="fa-solid fa-store"></i>
+        Exit to Store
+    </a>
+    <a href="{% url 'adminlogout' %}" class="nav-item" style="color: rgba(239,68,68,0.7);">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        Logout
+    </a>
+ </div>
+
+</aside>
+
+
+<!-- ════════════════ MAIN ════════════════ -->
+<main class="main">
+
+    <!-- TOP BAR -->
+    <div class="flex justify-between items-center mb-10 fade-up">
+        <div>
+            <h2 class="text-3xl font-bold mb-1">Dashboard</h2>
+            <p class="text-gray-400 text-sm">Welcome back, Admin</p>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <!-- Date -->
+            <div class="glass px-5 py-2 rounded-full text-sm text-gray-300">
+                <i class="fa-regular fa-calendar mr-2 text-indigo-400"></i>
+                <span id="dateDisplay"></span>
+            </div>
+
+            <!-- Avatar -->
+            <div class="w-10 h-10 rounded-full flex items-center justify-center"
+                 style="background: linear-gradient(135deg,#6366f1,#4338ca);">
+                <i class="fa-solid fa-user text-sm"></i>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ── STAT CARDS ── -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+        <!-- Total Products -->
+        <div class="stat-card glass fade-up">
+            <div class="stat-icon"
+                 style="background: rgba(99,102,241,0.18); color: #818cf8;">
+                <i class="fa-solid fa-box"></i>
+            </div>
+            <div class="stat-value">{{ total_products }}</div>
+            <div class="stat-label">Total Products</div>
+
+            <div style="
+                position:absolute;
+                right:-20px; bottom:-20px;
+                width:100px; height:100px;
+                border-radius:50%;
+                background: rgba(99,102,241,0.07);
+            "></div>
+        </div>
+
+        <!-- Total Users -->
+        <div class="stat-card glass fade-up">
+            <div class="stat-icon"
+                 style="background: rgba(16,185,129,0.15); color: #34d399;">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="stat-value">{{ total_users }}</div>
+            <div class="stat-label">Registered Users</div>
+
+            <div style="
+                position:absolute;
+                right:-20px; bottom:-20px;
+                width:100px; height:100px;
+                border-radius:50%;
+                background: rgba(16,185,129,0.06);
+            "></div>
+        </div>
+
+        <!-- Cart Orders -->
+        <div class="stat-card glass fade-up">
+            <div class="stat-icon"
+                 style="background: rgba(245,158,11,0.15); color: #fbbf24;">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+            <div class="stat-value">{{ total_cart_items }}</div>
+            <div class="stat-label">Items in Carts</div>
+
+            <div style="
+                position:absolute;
+                right:-20px; bottom:-20px;
+                width:100px; height:100px;
+                border-radius:50%;
+                background: rgba(245,158,11,0.06);
+            "></div>
+        </div>
+
+    </div>
+
+
+    <!-- ── QUICK ACTIONS + RECENT ACTIVITY ── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Quick Actions (1/3) -->
+        <div class="fade-up">
+            <h3 class="text-sm font-semibold tracking-widest uppercase text-gray-400 mb-4">
+                Quick Actions
+            </h3>
+
+            <div class="space-y-3">
+
+                <a href="{% url 'products' %}" class="action-card glass">
+                    <div class="action-icon"
+                         style="background: rgba(99,102,241,0.18); color: #818cf8;">
+                        <i class="fa-solid fa-circle-plus"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">Add Product</div>
+                        <div class="text-xs text-gray-400 mt-0.5">Add to inventory</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right ml-auto text-gray-600 text-xs"></i>
+                </a>
+
+                <a href="{% url 'products' %}" class="action-card glass">
+                    <div class="action-icon"
+                         style="background: rgba(139,92,246,0.18); color: #c4b5fd;">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">Manage Products</div>
+                        <div class="text-xs text-gray-400 mt-0.5">Edit or delete items</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right ml-auto text-gray-600 text-xs"></i>
+                </a>
+
+                <a href="{% url 'userlist' %}" class="action-card glass">
+                    <div class="action-icon"
+                         style="background: rgba(16,185,129,0.15); color: #34d399;">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">View Users</div>
+                        <div class="text-xs text-gray-400 mt-0.5">Manage user accounts</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right ml-auto text-gray-600 text-xs"></i>
+                </a>
+
+                <a href="{% url 'all_products' %}" class="action-card glass">
+                    <div class="action-icon"
+                         style="background: rgba(245,158,11,0.15); color: #fbbf24;">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">View Store</div>
+                        <div class="text-xs text-gray-400 mt-0.5">See public product page</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right ml-auto text-gray-600 text-xs"></i>
+                </a>
+
+            </div>
+        </div>
+
+
+        <!-- Recent Cart Activity (2/3) -->
+        <div class="lg:col-span-2 fade-up">
+            <h3 class="text-sm font-semibold tracking-widest uppercase text-gray-400 mb-4">
+                Recent Cart Activity
+            </h3>
+
+            <div class="glass rounded-2xl overflow-hidden">
+
+                {% if recent_carts %}
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th>Added</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in recent_carts %}
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                                         style="background: rgba(99,102,241,0.2); color: #a5b4fc;">
+                                        {{ item.user.name|first|upper }}
+                                    </div>
+                                    {{ item.user.name }}
+                                </div>
+                            </td>
+                            <td>{{ item.product.name }}</td>
+                            <td>
+                                <span class="badge"
+                                      style="background: rgba(99,102,241,0.15); color: #a5b4fc;">
+                                    × {{ item.quantity }}
+                                </span>
+                            </td>
+                            <td class="font-semibold" style="color: white;">
+                                ₹{% widthratio item.product.price 1 item.quantity %}
+                            </td>
+                            <td class="text-xs text-gray-500">
+                                {{ item.created_at|date:"M d, Y" }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% else %}
+                <div class="text-center py-16 text-gray-500">
+                    <i class="fa-solid fa-cart-shopping text-4xl mb-4 block opacity-20"></i>
+                    No cart activity yet.
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <!-- ── FEEDBACK SECTION ── -->
+    <div class="mt-8 fade-up">
+        <h3 class="text-sm font-semibold tracking-widest uppercase text-gray-400 mb-4">
+            Customer Feedback
+        </h3>
+        <div class="glass rounded-2xl overflow-hidden">
+            {% if feedbacks %}
+            <table class="activity-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Rating</th>
+                        <th>Feedback</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fb in feedbacks %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                     style="background: rgba(99,102,241,0.2); color: #a5b4fc;">
+                                    {{ fb.email|first|upper }}
+                                </div>
+                                {{ fb.email }}
+                            </div>
+                        </td>
+                        <td>
+                            <span style="color:#fbbf24; letter-spacing:2px;">
+                                {% for i in "12345" %}{% if forloop.counter <= fb.rating %}★{% else %}☆{% endif %}{% endfor %}
+                            </span>
+                            <span class="text-xs text-gray-500 ml-1">({{ fb.rating }}/5)</span>
+                        </td>
+                        <td>
+                            <p class="text-sm text-gray-300" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px;">
+                                {{ fb.feedback_text }}
+                            </p>
+                        </td>
+                        <td class="text-xs text-gray-500">
+                            {{ fb.created_at|date:"M d, Y" }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-14 text-gray-500">
+                <i class="fa-solid fa-star text-4xl mb-4 block opacity-20"></i>
+                No feedback submitted yet.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <!-- ── CONTACT MESSAGES ── -->
+    <div class="mt-8 fade-up">
+        <h3 class="text-sm font-semibold tracking-widest uppercase text-gray-400 mb-4">
+            Contact Messages
+        </h3>
+        <div class="glass rounded-2xl overflow-hidden">
+            {% if contact_messages %}
+            <table class="activity-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Message</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for msg in contact_messages %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                     style="background: rgba(16,185,129,0.15); color: #34d399;">
+                                    {{ msg.name|first|upper }}
+                                </div>
+                                <span style="color:white; font-weight:500;">{{ msg.name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ msg.email }}</td>
+                        <td>
+                            <p class="text-sm text-gray-300" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px;">
+                                {{ msg.message }}
+                            </p>
+                        </td>
+                        <td class="text-xs text-gray-500">
+                            {{ msg.created_at|date:"M d, Y" }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-14 text-gray-500">
+                <i class="fa-solid fa-envelope text-4xl mb-4 block opacity-20"></i>
+                No contact messages yet.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+   
+    <!-- ── RECENT PRODUCTS ── -->
+    <div class="mt-8 fade-up">
+        <h3 class="text-sm font-semibold tracking-widest uppercase text-gray-400 mb-4">
+            Recently Added Products
+        </h3>
+
+        <div class="glass rounded-2xl overflow-hidden">
+
+            {% if recent_products %}
+            <table class="activity-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Added</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in recent_products %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <img src="{{ product.image.url }}"
+                                     class="w-10 h-10 rounded-xl object-cover"
+                                     style="background: rgba(255,255,255,0.04);">
+                                <span class="font-medium" style="color:white;">
+                                    {{ product.name }}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  style="background: rgba(139,92,246,0.15); color: #c4b5fd;">
+                                {{ product.category }}
+                            </span>
+                        </td>
+                        <td style="color:white; font-weight:600;">₹{{ product.price }}</td>
+                        <td>
+                            {% if product.quantity > 10 %}
+                                <span class="badge"
+                                      style="background:rgba(16,185,129,0.15); color:#34d399;">
+                                    In Stock ({{ product.quantity }})
+                                </span>
+                            {% elif product.quantity > 0 %}
+                                <span class="badge"
+                                      style="background:rgba(245,158,11,0.15); color:#fbbf24;">
+                                    Low ({{ product.quantity }})
+                                </span>
+                            {% else %}
+                                <span class="badge"
+                                      style="background:rgba(239,68,68,0.15); color:#fca5a5;">
+                                    Out of Stock
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-xs text-gray-500">
+                            {{ product.created_at|date:"M d, Y" }}
+                        </td>
+                        <td>
+                            <a href="{% url 'products' %}?edit={{ product.id }}"
+                                class="text-indigo-400 hover:text-indigo-300 text-xs transition">
+                                 Edit →
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% else %}
+            <div class="text-center py-16 text-gray-500">
+                <i class="fa-solid fa-box text-4xl mb-4 block opacity-20"></i>
+                No products yet. <a href="{% url 'add_product' %}" class="text-indigo-400">Add one →</a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</main>
+
+
+<script>
+// Live date
+const d = new Date();
+document.getElementById('dateDisplay').textContent =
+    d.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+</script>
+
+</body>
+</html>

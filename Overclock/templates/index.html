@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+{% block title %}OVERCLOCK | Gaming PC Store — Prebuilt PCs & Components{% endblock %}
+
+{% block meta_description %}Shop premium prebuilt gaming PCs, GPUs, CPUs, RAM, SSDs, monitors and gaming peripherals at OVERCLOCK. Free delivery above ₹10,000. Kerala's #1 gaming store.{% endblock %}
+
+{% block meta_keywords %}gaming PC store, prebuilt gaming PC, buy GPU India, gaming setup Kerala, custom PC build, RTX 4080, gaming chair, gaming monitor{% endblock %}
+
+{% block canonical %}https://overclock.store/{% endblock %}
+{% block og_url %}https://overclock.store/{% endblock %}
+{% block og_title %}OVERCLOCK | Kerala's #1 Gaming PC Store{% endblock %}
+{% load static %}
+
+{% block content %}
+
+{% if active_promos %}
+<div class="w-full py-2.5 px-6 text-center text-sm font-medium overflow-hidden"
+     style="background:linear-gradient(90deg, rgba(99,102,241,0.3), rgba(168,85,247,0.3), rgba(99,102,241,0.3)); border-bottom:1px solid rgba(99,102,241,0.2);">
+    <div class="flex items-center justify-center gap-3 flex-wrap">
+        <i class="fa-solid fa-fire text-orange-400 animate-pulse"></i>
+        {% for promo in active_promos %}
+        <span class="text-white">{{ promo.description }}</span>
+        <span class="text-indigo-300 font-bold tracking-widest">{{ promo.coupon_code }}</span>
+        {% if not forloop.last %}<span class="text-gray-500">|</span>{% endif %}
+        {% endfor %}
+        <i class="fa-solid fa-fire text-orange-400 animate-pulse"></i>
+    </div>
+</div>
+{% endif %}
+
+<style>
+
+
+.hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            rgba(5,8,22,0.6),
+            rgba(5,8,22,0.8)
+        ),
+        url("{% static 'images/bg.avif' %}");
+
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    z-index: -2;
+}
+
+/* subtle overlay glow */
+.hero-section::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        circle at top left,
+        rgba(99,102,241,0.12),
+        transparent 40%
+    );
+    z-index: -1;
+}
+
+.btn-shine {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-shine::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255,255,255,0.25),
+        transparent
+    );
+    transition: 0.6s;
+}
+
+.btn-shine:hover::before {
+    left: 100%;
+}
+
+.fade-up {
+    animation: fadeUp 0.8s ease forwards;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* full image visible */
+.product-img {
+    width: 100%;
+    height: 260px;
+    object-fit: contain;
+    background: rgba(255,255,255,0.03);
+    padding: 10px;
+    border-radius: 18px;
+}
+
+.top-product-img {
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    background: rgba(255,255,255,0.03);
+    padding: 10px;
+    border-radius: 18px;
+}
+
+</style>
+
+
+<!-- HERO SECTION -->
+<section class="hero-section fade-up">
+
+    <div class="max-w-4xl">
+
+        <h1 class="text-6xl md:text-7xl font-bold mb-6">
+            Elite Gaming Systems
+        </h1>
+
+        <p class="text-gray-300 text-lg md:text-xl mb-10">
+            Premium PCs. RGB Builds. Performance Without Limits.
+        </p>
+
+        <!-- Explore Store Button -->
+        <a href="#top-products"
+           class="btn-shine inline-block bg-indigo-600 hover:bg-indigo-700 px-10 py-4 rounded-full font-semibold transition">
+            Explore Store
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- FEATURED CATEGORIES -->
+<section class="max-w-7xl mx-auto px-6 py-20 fade-up">
+
+    <h2 class="text-4xl font-bold text-center mb-14">
+        Featured Categories
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <!-- Premium -->
+        <div class="glass rounded-3xl p-6 hover:-translate-y-2 transition duration-300">
+            <img src="{% static 'products/rog.png' %}"
+                 class="product-img mb-5">
+
+            <h3 class="text-2xl font-semibold mb-3">
+                Premium Builds
+            </h3>
+
+            <p class="text-gray-300">
+                ASUS ROG, RTX 4090, Ryzen 9 flagship systems for elite performance.
+            </p>
+        </div>
+
+        <!-- Minimal -->
+        <div class="glass rounded-3xl p-6 hover:-translate-y-2 transition duration-300">
+            <img src="{% static 'products/minimal.avif' %}"
+                 class="product-img mb-5">
+
+            <h3 class="text-2xl font-semibold mb-3">
+                Minimal Builds
+            </h3>
+
+            <p class="text-gray-300">
+                Clean professional setups for gaming and productivity.
+            </p>
+        </div>
+
+        <!-- RGB -->
+        <div class="glass rounded-3xl p-6 hover:-translate-y-2 transition duration-300">
+            <img src="{% static 'products/rgb.jpg' %}"
+                 class="product-img mb-5">
+
+            <h3 class="text-2xl font-semibold mb-3">
+                RGB Builds
+            </h3>
+
+            <p class="text-gray-300">
+                Cyberpunk inspired glowing setups built for streamers.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- TOP PRODUCTS -->
+<section id="top-products" class="max-w-7xl mx-auto px-6 py-20 fade-up">
+
+    <h2 class="text-4xl font-bold text-center mb-14">
+        Top Products
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition">
+            <img src="{% static 'products/rtx4080.jpg' %}"
+                 class="top-product-img mb-4">
+
+            <h3 class="text-lg font-semibold">
+                NVIDIA RTX 4080 GPU
+            </h3>
+
+            <p class="text-indigo-300 mt-2 font-medium">
+                ₹1,12,999
+            </p>
+        </div>
+
+        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition">
+            <img src="{% static 'products/Ryzen9-7950X.jpg' %}"
+                 class="top-product-img mb-4">
+
+            <h3 class="text-lg font-semibold">
+                AMD Ryzen 9 7950X
+            </h3>
+
+            <p class="text-indigo-300 mt-2 font-medium">
+                ₹58,999
+            </p>
+        </div>
+
+        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition">
+            <img src="{% static 'products/legion-monitor.png' %}"
+                 class="top-product-img mb-4">
+
+            <h3 class="text-lg font-semibold">
+                LEGION Gaming Monitor
+            </h3>
+
+            <p class="text-indigo-300 mt-2 font-medium">
+                ₹27,999
+            </p>
+        </div>
+
+        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition">
+            <img src="{% static 'products/gchair1.jpg' %}"
+                 class="top-product-img mb-4">
+
+            <h3 class="text-lg font-semibold">
+                Gaming Chair
+            </h3>
+
+            <p class="text-indigo-300 mt-2 font-medium">
+                ₹18,999
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- BUILD SECTION -->
+<section class="max-w-6xl mx-auto px-6 py-20 fade-up">
+
+    <div class="glass rounded-3xl p-12 flex flex-col md:flex-row justify-between items-center gap-8">
+
+        <div>
+            <h2 class="text-4xl font-bold mb-4">
+                Build Your Own Dream PC
+            </h2>
+
+            <p class="text-gray-300">
+                Start from scratch and create your ideal setup.
+            </p>
+        </div>
+
+        <a href=""
+           class="btn-shine bg-indigo-600 hover:bg-indigo-700 px-10 py-4 rounded-full font-semibold transition">
+            Start Building
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- ABOUT -->
+<section id="about" class="py-24 px-6 fade-up">
+
+    <div class="max-w-5xl mx-auto text-center">
+
+        <h2 class="text-4xl font-bold mb-8">
+            About Us
+        </h2>
+
+        <p class="text-gray-300 text-lg leading-8">
+            OVERCLOCK delivers premium gaming PCs, components,
+            and accessories built for enthusiasts, creators,
+            and competitive gamers.
+
+            From flagship RTX-powered rigs to clean minimal workstations,
+            we help gamers push performance beyond limits.
+        </p>
+
+    </div>
+
+</section>
+
+<!-- OUR TEAM -->
+<section class="py-24 px-6 fade-up">
+
+    <div class="max-w-7xl mx-auto text-center">
+
+        <h2 class="text-4xl font-bold mb-8">
+            Our Team
+        </h2>
+
+        <p class="text-gray-300 text-lg mb-14 max-w-3xl mx-auto">
+            Behind OVERCLOCK is a passionate team of builders, gamers,
+            creators, and tech enthusiasts dedicated to delivering
+            elite gaming systems and premium customer experience.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+            <!-- MEMBER 1 -->
+            <div class="glass rounded-3xl p-6 hover:-translate-y-2 transition duration-300">
+
+                <img src="{% static 'team/alex.jpg' %}"
+                     class="w-40 h-40 rounded-full mx-auto object-cover mb-6 border border-white/10">
+
+                <h3 class="text-2xl font-semibold mb-2">
+                    Alex Carter
+                </h3>
+
+                <p class="text-indigo-300 mb-3">
+                    Founder & System Architect
+                </p>
+
+                <p class="text-gray-300 text-sm leading-7">
+                    Specializing in premium gaming rigs,
+                    flagship builds, and performance optimization.
+                </p>
+
+            </div>
+
+            <!-- MEMBER 2 -->
+            <div class="glass rounded-3xl p-6 hover:-translate-y-2 transition duration-300">
+
+                <img src="{% static 'team/sophia.jpg' %}"
+                     class="w-40 h-40 rounded-full mx-auto object-cover mb-6 border border-white/10">
+
+                <h3 class="text-2xl font-semibold mb-2">
+                    Sophia Reynolds
+                </h3>
+
+                <p class="text-indigo-300 mb-3">
+                    Creative Director
+                </p>
+
+                <p class="text-gray-300 text-sm leading-7">
+                    Focused on premium visual identity,
+                    customer experience, and brand design.
+                </p>
+
+            </div>
+
+            <!-- MEMBER 3 -->
+            <div class="glass rounded-3xl p-6 hover:-translate-y-2 transition duration-300">
+
+                <img src="{% static 'team/daniel.jpg' %}"
+                     class="w-40 h-40 rounded-full mx-auto object-cover mb-6 border border-white/10">
+
+                <h3 class="text-2xl font-semibold mb-2">
+                    Daniel Brooks
+                </h3>
+
+                <p class="text-indigo-300 mb-3">
+                    Hardware Specialist
+                </p>
+
+                <p class="text-gray-300 text-sm leading-7">
+                    Expert in component selection,
+                    thermal performance, and custom PC builds.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,419 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK | Checkout</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; cursor:default; }
+body { font-family:Inter,sans-serif; background:radial-gradient(circle at top left,rgba(99,102,241,.10),transparent 40%),radial-gradient(circle at top right,rgba(255,255,255,.04),transparent 30%),#050816; color:white; overflow-x:hidden; }
+a,button { cursor:pointer; text-decoration:none; }
+input,textarea,select { cursor:text; }
+::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-track { background:#050816; } ::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:20px; }
+.glass { background:rgba(255,255,255,0.035); backdrop-filter:blur(18px); border:1px solid rgba(255,255,255,0.06); }
+.input-field { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:12px 16px; border-radius:12px; outline:none; transition:0.3s ease; font-size:14px; }
+.input-field:focus { border-color:rgba(99,102,241,0.6); background:rgba(99,102,241,0.07); box-shadow:0 0 0 3px rgba(99,102,241,0.12); }
+.input-field::placeholder { color:rgba(255,255,255,0.25); }
+.label { display:block; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:8px; }
+.pay-option { display:flex; align-items:center; gap:14px; padding:16px 20px; border-radius:16px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); cursor:pointer; transition:0.25s ease; }
+.pay-option:has(input:checked) { border-color:rgba(99,102,241,0.5); background:rgba(99,102,241,0.1); }
+.pay-option input[type=radio] { accent-color:#6366f1; width:16px; height:16px; cursor:pointer; }
+.checkout-btn { width:100%; padding:16px; border-radius:16px; background:linear-gradient(135deg,#6366f1,#4338ca); font-weight:600; font-size:14px; letter-spacing:1.5px; transition:0.3s ease; }
+.checkout-btn:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(99,102,241,0.35); }
+.section-title { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:16px; }
+.build-btn { background:linear-gradient(135deg,#6366f1,#818cf8); transition:.3s ease; }
+.digital-notice { background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:16px; padding:14px 18px; }
+</style>
+</head>
+<body>
+
+<header class="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-black/20">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+        <a href="{% url 'index' %}" class="text-xl font-semibold tracking-[0.45em]">OVERCLOCK</a>
+        <nav class="hidden lg:flex items-center gap-8 text-sm text-gray-300">
+            <a href="{% url 'index' %}" class="hover:text-white transition">Home</a>
+            <a href="{% url 'all_products' %}" class="hover:text-white transition">Products</a>
+            <a href="{% url 'cart' %}" class="hover:text-white transition"><i class="fa-solid fa-cart-shopping"></i></a>
+        </nav>
+        <a href="{% url 'all_products' %}" class="build-btn px-6 py-3 rounded-2xl text-sm font-medium">Shop More</a>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 pt-12 pb-24">
+
+    <div class="mb-10">
+        <p class="text-sm text-indigo-300 mb-2 tracking-[0.25em] uppercase">Almost There</p>
+        <h1 class="text-4xl font-semibold">Checkout</h1>
+        <p class="text-gray-400 mt-2 text-sm">Fill in your details below to complete your order.</p>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="mb-6 px-5 py-4 rounded-2xl text-sm font-medium bg-red-500/10 border border-red-500/25 text-red-300">
+        <i class="fa-solid fa-circle-exclamation mr-2"></i>{{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if has_digital %}
+    <div class="digital-notice mb-8 flex items-start gap-4">
+        <i class="fa-solid fa-envelope text-indigo-400 mt-0.5 text-lg flex-shrink-0"></i>
+        <div class="text-sm">
+            <p class="text-indigo-300 font-semibold mb-1">Your cart contains digital product(s)</p>
+            <ul class="text-gray-400 space-y-0.5">
+                {% for item in digital_items %}
+                <li>— <span class="text-white">{{ item.product.name }}</span> will be delivered via email as a license key.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'checkout' %}" id="checkoutForm">
+        {% csrf_token %}
+        <!-- Hidden fields submitted with form -->
+        <input type="hidden" name="coupon_code"      id="couponHidden"       value="">
+        <input type="hidden" name="discount_amount"  id="discountHidden"     value="0">
+
+        <div class="grid lg:grid-cols-[1fr_380px] gap-10 items-start">
+
+            <!-- LEFT -->
+            <div class="space-y-8">
+
+                <!-- Contact Info -->
+                <div class="glass rounded-3xl p-8">
+                    <p class="section-title">Contact Information</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="label">Full Name</label>
+                            <input type="text" name="full_name" class="input-field" placeholder="John Doe" value="{{ prefill.full_name }}" required>
+                        </div>
+                        <div>
+                            <label class="label">Email Address</label>
+                            <input type="email" name="email" class="input-field" placeholder="you@example.com" value="{{ prefill.email }}" required>
+                        </div>
+                        <div>
+                            <label class="label">Phone Number</label>
+                            <input type="tel" name="phone" class="input-field" placeholder="9876543210" value="{{ prefill.phone }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                {% if has_digital %}
+                <div class="glass rounded-3xl p-8">
+                    <p class="section-title">Digital Delivery</p>
+                    <p class="text-sm text-gray-400 mb-5">Enter the email address where your license key(s) should be sent. If you're gifting this, enter the recipient's email.</p>
+                    <div>
+                        <label class="label">Delivery Email Address</label>
+                        <input type="email" name="delivery_email" class="input-field" placeholder="recipient@example.com" value="{{ prefill.email }}" required>
+                        <p class="text-xs text-gray-600 mt-2"><i class="fa-solid fa-circle-info mr-1"></i>This can be your own email or a friend's email if gifting.</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if has_physical %}
+                <div class="glass rounded-3xl p-8">
+                    <p class="section-title">Delivery Address</p>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="label">Street Address</label>
+                            <textarea name="address" class="input-field" rows="3" placeholder="House no, street name, landmark..." required>{{ prefill.address }}</textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-5">
+                            <div>
+                                <label class="label">City</label>
+                                <input type="text" name="city" class="input-field" placeholder="Thrissur" required>
+                            </div>
+                            <div>
+                                <label class="label">Pincode</label>
+                                <input type="text" name="pincode" class="input-field" placeholder="680001" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Coupon Code -->
+                <div class="glass rounded-3xl p-8">
+                    <p class="section-title">Promo Code</p>
+
+                    <!-- Input state (shown when no coupon applied) -->
+                    <div id="couponInputArea">
+                        <div class="flex gap-3">
+                            <input type="text" id="couponInput"
+                                class="input-field flex-1 uppercase tracking-widest"
+                                placeholder="ENTER CODE e.g. GPU20"
+                                oninput="this.value = this.value.toUpperCase()">
+                            <button type="button" onclick="checkCoupon()"
+                                    class="px-5 py-3 rounded-xl text-sm font-semibold transition hover:-translate-y-0.5 whitespace-nowrap"
+                                    style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc;">
+                                <i class="fa-solid fa-tag mr-1"></i> Apply
+                            </button>
+                        </div>
+                        <div id="couponMsg" class="mt-3 text-sm hidden"></div>
+                    </div>
+
+                    <!-- Applied state (shown after valid coupon) -->
+                    <div id="couponAppliedArea" class="hidden">
+                        <div class="flex items-center justify-between px-4 py-3 rounded-xl"
+                             style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25);">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-circle-check text-green-400"></i>
+                                <div>
+                                    <p class="text-sm font-semibold text-green-400" id="appliedPromoName"></p>
+                                    <p class="text-xs text-gray-400" id="appliedPromoCode"></p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="removeCoupon()"
+                                    class="flex items-center gap-1.5 text-xs font-semibold transition hover:text-white"
+                                    style="color:#f87171;">
+                                <i class="fa-solid fa-xmark"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Payment Method -->
+                <div class="glass rounded-3xl p-8">
+                    <p class="section-title">Payment Method</p>
+                    <div class="space-y-3">
+                        {% if has_physical %}
+                        <label class="pay-option">
+                            <input type="radio" name="payment_method" value="COD" checked onchange="showPaymentFields()">
+                            <i class="fa-solid fa-money-bill-wave text-green-400 text-lg w-6 text-center"></i>
+                            <div>
+                                <p class="text-sm font-medium">Cash on Delivery</p>
+                                <p class="text-xs text-gray-500">Pay when your order arrives</p>
+                            </div>
+                        </label>
+                        {% endif %}
+
+                        <label class="pay-option">
+                            <input type="radio" name="payment_method" value="UPI"
+                                   {% if not has_physical %}checked{% endif %}
+                                   onchange="showPaymentFields()">
+                            <i class="fa-solid fa-mobile-screen text-indigo-400 text-lg w-6 text-center"></i>
+                            <div>
+                                <p class="text-sm font-medium">UPI</p>
+                                <p class="text-xs text-gray-500">Google Pay, PhonePe, Paytm etc.</p>
+                            </div>
+                        </label>
+
+                        <label class="pay-option">
+                            <input type="radio" name="payment_method" value="CARD" onchange="showPaymentFields()">
+                            <i class="fa-solid fa-credit-card text-purple-400 text-lg w-6 text-center"></i>
+                            <div>
+                                <p class="text-sm font-medium">Credit / Debit Card</p>
+                                <p class="text-xs text-gray-500">Visa, Mastercard, RuPay</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div id="upiFields" class="mt-5 {% if has_physical %}hidden{% endif %}">
+                        <label class="label">UPI ID</label>
+                        <input type="text" name="upi_id" class="input-field" placeholder="yourname@upi">
+                    </div>
+
+                    <div id="cardFields" class="mt-5 hidden space-y-4">
+                        <div>
+                            <label class="label">Card Number</label>
+                            <input type="text" name="card_number" class="input-field" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="label">Expiry Date</label>
+                                <input type="text" name="card_expiry" class="input-field" placeholder="MM/YY" maxlength="5">
+                            </div>
+                            <div>
+                                <label class="label">CVV</label>
+                                <input type="password" name="card_cvv" class="input-field" placeholder="•••" maxlength="4">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT: Order Summary -->
+            <div class="glass rounded-3xl p-6 sticky top-28">
+                <h2 class="text-lg font-semibold mb-5">Order Summary</h2>
+                <div class="space-y-3 mb-5">
+
+                    {% if has_physical %}
+                    <p class="text-xs text-gray-600 uppercase tracking-widest mb-2">Physical Items</p>
+                    {% for item in physical_items %}
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/5 overflow-hidden flex-shrink-0">
+                            <img src="{{ item.product.image.url }}" class="w-full h-full object-contain p-1">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate">{{ item.product.name }}</p>
+                            <p class="text-xs text-gray-500">× {{ item.quantity }}</p>
+                        </div>
+                        <span class="text-sm font-semibold">₹{{ item.total_price|floatformat:0 }}</span>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    {% if has_digital %}
+                    <p class="text-xs text-gray-600 uppercase tracking-widest mt-4 mb-2">Digital Items</p>
+                    {% for item in digital_items %}
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
+                             style="background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2);">
+                            <i class="fa-solid fa-key text-indigo-400 text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate">{{ item.product.name }}</p>
+                            <p class="text-xs text-indigo-400">📧 Via Email</p>
+                        </div>
+                        <span class="text-sm font-semibold">₹{{ item.total_price|floatformat:0 }}</span>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                </div>
+
+                <div class="border-t border-white/5 pt-4 space-y-3 mb-2 text-sm">
+                    <div class="flex justify-between text-gray-400">
+                        <span>Subtotal</span><span class="text-white">₹{{ total_price }}</span>
+                    </div>
+                    {% if has_digital %}
+                    <div class="flex justify-between text-gray-400">
+                        <span>Digital Delivery</span>
+                        <span class="text-green-400">Free</span>
+                    </div>
+                    {% endif %}
+                    {% if has_physical %}
+                    <div class="flex justify-between text-gray-400">
+                        <span>Physical Delivery</span>
+                        {% if delivery_fee == 0 %}
+                        <span class="text-green-400">Free</span>
+                        {% else %}
+                        <span class="text-white">₹{{ delivery_fee }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Discount row — hidden until coupon applied -->
+                    <div id="discountRow" class="hidden flex justify-between text-gray-400">
+                        <span id="discountLabel" class="text-green-400"></span>
+                        <span id="discountValue" class="text-green-400"></span>
+                    </div>
+
+                    <!-- Free product row -->
+                    <div id="freeProductRow" class="hidden px-3 py-2 rounded-xl text-xs"
+                         style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); color:#86efac;">
+                        <i class="fa-solid fa-gift mr-1"></i>
+                        <span id="freeProductName"></span> added for free!
+                    </div>
+
+                    <div class="flex justify-between pt-3 border-t border-white/5">
+                        <span class="font-semibold">Total</span>
+                        <span class="text-2xl font-bold" id="finalTotal">₹{{ grand_total }}</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="checkout-btn uppercase tracking-widest text-white mt-4">
+                    <i class="fa-solid fa-lock mr-2 text-xs"></i> Place Order
+                </button>
+                <a href="{% url 'cart' %}" class="block text-center mt-4 text-sm text-gray-500 hover:text-gray-300 transition">← Back to Cart</a>
+            </div>
+
+        </div>
+    </form>
+</main>
+
+<footer class="text-center py-10 text-gray-500 text-sm">© 2026 OVERCLOCK — Built for Performance</footer>
+
+<script>
+function showPaymentFields() {
+    const method = document.querySelector('input[name="payment_method"]:checked').value;
+    document.getElementById('upiFields').classList.toggle('hidden', method !== 'UPI');
+    document.getElementById('cardFields').classList.toggle('hidden', method !== 'CARD');
+}
+
+const baseGrandTotal = {{ grand_total }};
+let appliedDiscount  = 0;
+
+async function checkCoupon() {
+    const code = document.getElementById('couponInput').value.trim();
+    if (!code) { showMsg('Please enter a coupon code.', false); return; }
+
+    const formData = new FormData();
+    formData.append('coupon_code', code);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    const res  = await fetch("{% url 'apply_coupon' %}", { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.valid) {
+        appliedDiscount = data.discount_amount;
+
+        // populate hidden fields so form submission carries the coupon
+        document.getElementById('couponHidden').value   = data.coupon_code;
+        document.getElementById('discountHidden').value = data.discount_amount;
+
+        // discount row
+        document.getElementById('discountRow').classList.remove('hidden');
+        document.getElementById('discountLabel').textContent = `${data.promo_name} (${data.coupon_code})`;
+        document.getElementById('discountValue').textContent = `-₹${data.discount_amount.toLocaleString('en-IN')}`;
+
+        // updated total
+        document.getElementById('finalTotal').textContent =
+            `₹${Math.max(0, baseGrandTotal - data.discount_amount).toLocaleString('en-IN')}`;
+
+        // free product row
+        if (data.promo_type === 'FREE_PRODUCT' && data.free_product_name) {
+            document.getElementById('freeProductRow').classList.remove('hidden');
+            document.getElementById('freeProductName').textContent = data.free_product_name;
+        }
+
+        // switch to applied state UI
+        document.getElementById('appliedPromoName').textContent = `"${data.promo_name}" applied!`;
+        document.getElementById('appliedPromoCode').textContent = data.coupon_code;
+        document.getElementById('couponInputArea').classList.add('hidden');
+        document.getElementById('couponAppliedArea').classList.remove('hidden');
+
+    } else {
+        removeCoupon();
+        showMsg(data.error, false);
+    }
+}
+
+function removeCoupon() {
+    appliedDiscount = 0;
+
+    // clear hidden fields
+    document.getElementById('couponHidden').value   = '';
+    document.getElementById('discountHidden').value = '0';
+
+    // reset UI rows
+    document.getElementById('discountRow').classList.add('hidden');
+    document.getElementById('freeProductRow').classList.add('hidden');
+    document.getElementById('finalTotal').textContent = `₹${baseGrandTotal.toLocaleString('en-IN')}`;
+
+    // switch back to input state
+    document.getElementById('couponInput').value = '';
+    document.getElementById('couponInputArea').classList.remove('hidden');
+    document.getElementById('couponAppliedArea').classList.add('hidden');
+
+    // clear any error message
+    const msg = document.getElementById('couponMsg');
+    msg.classList.add('hidden');
+    msg.textContent = '';
+}
+
+function showMsg(text, success) {
+    const msg = document.getElementById('couponMsg');
+    msg.textContent = text;
+    msg.className = `mt-3 text-sm ${success ? 'text-green-400' : 'text-red-400'}`;
+    msg.classList.remove('hidden');
+}
+</script>
+</body>
+</html>

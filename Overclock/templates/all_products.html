@@ -1,0 +1,351 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVERCLOCK | Premium Products</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Inter, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(99,102,241,.10), transparent 40%),
+                radial-gradient(circle at top right, rgba(255,255,255,.04), transparent 30%),
+                #050816;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        a { text-decoration: none; }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050816;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,.12);
+            border-radius: 20px;
+        }
+
+        .glass {
+            background: rgba(255,255,255,0.035);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .premium-border {
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+        }
+
+        .product-card {
+            transition: .35s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(99,102,241,.25);
+        }
+
+        .product-image {
+            height: 220px;
+            object-fit: contain;
+            width: 100%;
+        }
+
+        .build-btn {
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+            transition: .3s ease;
+        }
+
+        .build-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99,102,241,.22);
+        }
+
+        .filter-pill {
+            transition: .25s ease;
+        }
+
+        .filter-pill:hover {
+            border-color: rgba(99,102,241,.35);
+            background: rgba(99,102,241,.08);
+        }
+    </style>
+</head>
+<body>
+
+{% if active_promos %}
+<div class="w-full py-2.5 px-6 text-center text-sm font-medium overflow-hidden"
+     style="background:linear-gradient(90deg, rgba(99,102,241,0.3), rgba(168,85,247,0.3), rgba(99,102,241,0.3)); border-bottom:1px solid rgba(99,102,241,0.2);">
+    <div class="flex items-center justify-center gap-3 flex-wrap">
+        <i class="fa-solid fa-fire text-orange-400 animate-pulse"></i>
+        {% for promo in active_promos %}
+        <span class="text-white">{{ promo.description }}</span>
+        <span class="text-indigo-300 font-bold tracking-widest">{{ promo.coupon_code }}</span>
+        {% if not forloop.last %}<span class="text-gray-500">|</span>{% endif %}
+        {% endfor %}
+        <i class="fa-solid fa-fire text-orange-400 animate-pulse"></i>
+    </div>
+</div>
+{% endif %}
+
+<header class="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-black/20">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+
+        <a href="{% url 'index' %}" class="text-xl md:text-2xl font-semibold tracking-[0.45em]">
+            OVERCLOCK
+        </a>
+
+        <nav class="hidden lg:flex items-center gap-8 text-sm text-gray-300">
+            <a href="{% url 'index' %}" class="hover:text-white transition">Home</a>
+
+            <div class="relative group z-50">
+                <button class="hover:text-white transition flex items-center gap-2 px-2 py-1">
+                    Products <i class="fa-solid fa-chevron-down text-xs"></i>
+                </button>
+
+                <div class="absolute top-full left-0 mt-3 w-64 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999] max-h-[420px] overflow-y-auto">
+                    <a href="{% url 'all_products' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition {% if not active_category %}text-white bg-white/5{% endif %}">All Products</a>
+                    {% for cat in nav_categories %}
+                    <a href="{% url 'all_products' %}?category={{ cat.name|urlencode }}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition {% if active_category == cat.name %}text-white bg-white/5{% endif %}">{{ cat.name }}</a>
+                    {% endfor %}    
+                </div>
+            </div>
+
+            <a href="{% url 'index' %}#about" class="hover:text-white transition">About</a>
+
+            <a href="{% url 'cart' %}" class="hover:text-white transition" title="Cart">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </a>
+
+            <div class="relative group z-50">
+                <button class="hover:text-white transition px-2 py-1" title="Support">
+                    <i class="fa-solid fa-headset text-lg"></i>
+                </button>
+                <div class="absolute right-0 top-full mt-3 w-52 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999]">
+                    <a href="{% url 'feedback' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Feedback</a>
+                    <a href="{% url 'contact' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Contact Us</a>
+                </div>
+            </div>
+
+            <div class="relative group z-50">
+                <button class="hover:text-white transition px-2 py-1">
+                    <i class="fa-regular fa-user text-lg"></i>
+                </button>
+                <div class="absolute right-0 top-full mt-3 w-48 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999]">
+                    {% if request.session.email %}
+                        <a href="{% url 'profile' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Profile</a>
+                        <a href="{% url 'logout' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Logout</a>
+                        <a href="{% url 'order_history' %}">
+                            <i class="fa-solid fa-clock-rotate-left"></i> My Orders
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+        <a href="#" class="build-btn px-6 py-3 rounded-2xl text-sm font-medium">
+            Build Your Dream PC
+        </a>
+
+    </div>
+</header>
+
+<section class="max-w-7xl mx-auto px-6 pt-14 pb-10">
+
+    <div class="mb-12">
+        <p class="text-sm text-indigo-300 mb-3 tracking-[0.25em] uppercase">
+            Premium Gaming Ecosystem
+        </p>
+
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div>
+                <h1 class="text-4xl md:text-6xl font-semibold leading-tight max-w-3xl">
+                    {% if active_category %}
+                        {{ active_category }}
+                    {% else %}
+                        Built for Performance.
+                        Designed for Obsession.
+                    {% endif %}
+                </h1>
+                <p class="text-gray-400 mt-5 max-w-2xl text-base leading-7">
+                    {% if active_category %}
+                        Showing all products in <span class="text-indigo-300 font-medium">{{ active_category }}</span>.
+                        <a href="{% url 'all_products' %}" class="ml-2 text-indigo-400 hover:text-indigo-300 underline transition">View all →</a>
+                    {% else %}
+                        High-end gaming systems, elite components, and creator-grade accessories for gamers, streamers, and performance enthusiasts.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- CATEGORY PILLS -->
+        <div class="flex flex-wrap gap-3 mt-8">
+            <a href="{% url 'all_products' %}"
+               class="filter-pill px-5 py-2 rounded-full text-sm border transition
+               {% if not active_category %}bg-indigo-600/20 border-indigo-500/50 text-indigo-300{% else %}border-white/10 text-gray-400 hover:text-white{% endif %}">
+                All
+            </a>
+            {% for cat in categories %}
+            <a href="{% url 'all_products' %}?category={{ cat }}"
+               class="filter-pill px-5 py-2 rounded-full text-sm border transition
+               {% if active_category == cat %}bg-indigo-600/20 border-indigo-500/50 text-indigo-300{% else %}border-white/10 text-gray-400 hover:text-white{% endif %}">
+                {{ cat }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-[280px_1fr] gap-8">
+
+        <aside class="glass premium-border rounded-3xl p-6 h-fit sticky top-28">
+            <h3 class="text-lg font-semibold mb-6">Filters</h3>
+
+            <div class="space-y-4 text-sm text-gray-300">
+
+                <select class="w-full rounded-2xl px-4 py-3 bg-white/5 border border-white/10 text-white outline-none backdrop-blur-xl appearance-none hover:border-indigo-400/40 transition">
+                    <option class="bg-slate-900">Price Range</option>
+                    <option class="bg-slate-900">Under ₹25,000</option>
+                    <option class="bg-slate-900">₹25,000 - ₹50,000</option>
+                    <option class="bg-slate-900">₹50,000+</option>
+                </select>
+
+                <select class="w-full rounded-2xl px-4 py-3 bg-white/5 border border-white/10 text-white outline-none backdrop-blur-xl appearance-none hover:border-indigo-400/40 transition">
+                    <option class="bg-slate-900">GPU Type</option>
+                    <option class="bg-slate-900">NVIDIA</option>
+                    <option class="bg-slate-900">AMD Radeon</option>
+                    <option class="bg-slate-900">Integrated</option>
+                </select>
+
+                <select class="w-full rounded-2xl px-4 py-3 bg-white/5 border border-white/10 text-white outline-none backdrop-blur-xl appearance-none hover:border-indigo-400/40 transition">
+                    <option class="bg-slate-900">CPU Brand</option>
+                    <option class="bg-slate-900">Intel</option>
+                    <option class="bg-slate-900">AMD Ryzen</option>
+                </select>
+
+                <select class="w-full rounded-2xl px-4 py-3 bg-white/5 border border-white/10 text-white outline-none backdrop-blur-xl appearance-none hover:border-indigo-400/40 transition">
+                    <option class="bg-slate-900">RGB Preference</option>
+                    <option class="bg-slate-900">RGB</option>
+                    <option class="bg-slate-900">Non-RGB</option>
+                </select>
+
+                <select class="w-full rounded-2xl px-4 py-3 bg-white/5 border border-white/10 text-white outline-none backdrop-blur-xl appearance-none hover:border-indigo-400/40 transition">
+                    <option class="bg-slate-900">Product Type</option>
+                    <option class="bg-slate-900">Prebuilt PCs</option>
+                    <option class="bg-slate-900">Components</option>
+                    <option class="bg-slate-900">Accessories</option>
+                </select>
+
+                <select class="w-full rounded-2xl px-4 py-3 bg-white/5 border border-white/10 text-white outline-none backdrop-blur-xl appearance-none hover:border-indigo-400/40 transition">
+                    <option class="bg-slate-900">Brand</option>
+                    <option class="bg-slate-900">ASUS</option>
+                    <option class="bg-slate-900">MSI</option>
+                    <option class="bg-slate-900">Corsair</option>
+                    <option class="bg-slate-900">Gigabyte</option>
+                </select>
+
+            </div>
+        </aside>
+
+        <main>
+            <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                {% for product in products %}
+                <div class="product-card glass premium-border rounded-3xl p-5 group">
+
+                    <div class="rounded-3xl bg-white/[0.02] p-4 mb-5 overflow-hidden">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image group-hover:scale-105 transition duration-500">
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-lg font-semibold leading-snug">
+                            {{ product.name }}
+                        </h3>
+
+                        {% if product.has_promo %}
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <p class="text-gray-500 text-sm line-through">₹{{ product.formatted_price }}</p>
+                            <p class="text-green-400 text-lg font-semibold">₹{{ product.promo_price_formatted }}</p>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                                style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3);">
+                                {{ product.promo_label }}
+                            </span>
+                        </div>
+                        {% else %}
+                        <p class="text-indigo-300 text-lg font-medium">
+                            ₹{{ product.formatted_price }}
+                        </p>
+                        {% endif %}
+
+                        <p class="text-sm text-gray-400 leading-6 line-clamp-3">
+                            {{ product.description }}
+                        </p>
+                    </div>
+
+                    <div class="mt-6 flex items-center justify-between">
+
+                        {% if product.id in cart_product_ids %}
+                        <div class="flex items-center gap-3">
+                            <a href="{% url 'decrease_cart' product.id %}" class="w-10 h-10 rounded-full glass flex items-center justify-center">
+                                <i class="fa-solid fa-minus text-xs"></i>
+                            </a>
+
+                            <span class="font-semibold">
+                                {% for item in cart_items %}
+                                    {% if item.product.id == product.id %}
+                                        {{ item.quantity }}
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+
+                            <a href="{% url 'increase_cart' product.id %}" class="w-10 h-10 rounded-full glass flex items-center justify-center">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                            </a>
+                        </div>
+                        {% else %}
+                        <a href="{% url 'add_to_cart' product.id %}" class="w-11 h-11 rounded-full build-btn flex items-center justify-center" title="Add to Cart">
+                            <i class="fa-solid fa-cart-shopping text-sm"></i>
+                        </a>
+                        {% endif %}
+
+                        <button class="text-gray-400 hover:text-white transition" title="Quick Preview">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+
+            {% if not products %}
+            <div class="col-span-full text-center py-24 text-gray-500">
+                <i class="fa-solid fa-box-open text-5xl mb-4 block opacity-20"></i>
+                <p class="text-lg">No products found in this category.</p>
+                <a href="{% url 'all_products' %}" class="mt-4 inline-block text-indigo-400 hover:text-indigo-300 transition">← View all products</a>
+            </div>
+            {% endif %}
+
+        </main>
+
+    </div>
+</section>
+
+</body>
+</html>

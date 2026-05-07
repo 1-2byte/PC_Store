@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% block title %}OVERCLOCK | Gaming PC Store — Prebuilt PCs & Components{% endblock %}
+
+{% block meta_description %}Shop premium prebuilt gaming PCs, GPUs, CPUs, RAM, SSDs, monitors and gaming peripherals at OVERCLOCK. Free delivery above ₹10,000. Kerala's #1 gaming store.{% endblock %}
+
+{% block meta_keywords %}gaming PC store, prebuilt gaming PC, buy GPU India, gaming setup Kerala, custom PC build, RTX 4080, gaming chair, gaming monitor{% endblock %}
+
+{% block canonical %}https://overclock.store/{% endblock %}
+{% block og_url %}https://overclock.store/{% endblock %}
+{% block og_title %}OVERCLOCK | Kerala's #1 Gaming PC Store{% endblock %}
+{% load static %}
+
+{% block content %}
+
+<style>
+
+.input-field {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    padding: 14px 18px;
+    border-radius: 14px;
+    outline: none;
+    transition: 0.3s ease;
+    font-size: 14px;
+    font-family: sans-serif;
+    resize: none;
+    cursor: text;
+}
+
+.input-field::placeholder { color: rgba(255,255,255,0.25); }
+
+.input-field:focus {
+    border-color: rgba(99,102,241,0.6);
+    background: rgba(99,102,241,0.07);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #6366f1, #4338ca);
+    border-radius: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 13px;
+    transition: 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    color: white;
+}
+
+.btn-submit::before {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
+}
+
+.btn-submit:hover::before { left: 100%; }
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(99,102,241,0.4);
+}
+
+.info-card {
+    background: rgba(255,255,255,0.045);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 24px 26px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    transition: 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    border-color: rgba(99,102,241,0.25);
+}
+
+.info-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: fadeUp 0.7s ease forwards;
+}
+.fade-up:nth-child(1) { animation-delay: 0.05s; }
+.fade-up:nth-child(2) { animation-delay: 0.15s; }
+.fade-up:nth-child(3) { animation-delay: 0.25s; }
+
+@keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.thankyou-box {
+    display: none;
+    text-align: center;
+    padding: 40px 24px;
+    animation: fadeUp 0.6s ease forwards;
+}
+
+.check-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px auto;
+    font-size: 30px;
+    color: #34d399;
+}
+
+</style>
+
+<div class="max-w-6xl mx-auto px-6 py-16">
+
+    <!-- HEADING -->
+    <div class="text-center mb-14 fade-up">
+        <div class="inline-flex items-center gap-2 mb-4"
+             style="background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); padding: 6px 16px; border-radius: 999px;">
+            <i class="fa-solid fa-headset text-indigo-400 text-xs"></i>
+            <span style="font-size:11px; letter-spacing:2px; color:#a5b4fc; font-weight:600; text-transform:uppercase;">
+                We're Here to Help
+            </span>
+        </div>
+        <h1 class="text-5xl font-bold mb-4">Contact Us</h1>
+        <p class="text-gray-400 text-lg max-w-xl mx-auto">
+            Got a question or need support? Reach out and we'll get back to you.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+
+        <!-- LEFT — STORE INFO + FORM -->
+        <div class="space-y-10 fade-up">
+
+            <!-- STORE INFO CARDS -->
+            <div class="space-y-4">
+
+                <!-- Phone -->
+                <div class="info-card">
+                    <div class="info-icon"
+                         style="background: rgba(16,185,129,0.15); color: #34d399;">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 tracking-widest uppercase mb-1">Phone</p>
+                        <a href="tel:+919989091990"
+                           class="text-lg font-semibold text-white hover:text-indigo-300 transition"
+                           style="cursor:pointer;">
+                            +91 99890 91990
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="info-card">
+                    <div class="info-icon"
+                         style="background: rgba(99,102,241,0.18); color: #818cf8;">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 tracking-widest uppercase mb-1">Email</p>
+                        <a href="mailto:overclockpc@outlook.com"
+                           class="text-lg font-semibold text-white hover:text-indigo-300 transition"
+                           style="cursor:pointer;">
+                            overclockpc@outlook.com
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hours -->
+                <div class="info-card">
+                    <div class="info-icon"
+                         style="background: rgba(245,158,11,0.15); color: #fbbf24;">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 tracking-widest uppercase mb-1">Support Hours</p>
+                        <p class="text-lg font-semibold text-white">Mon – Sat, 10am – 7pm</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT — CONTACT FORM -->
+        <div class="fade-up">
+
+            <div style="background: rgba(255,255,255,0.045); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.25); border-radius: 28px; padding: 36px;">
+
+                <!-- FORM -->
+                <div id="contactForm">
+                    <h3 class="text-xl font-bold mb-6">Send a Message</h3>
+
+                    <form id="cForm" method="POST" action="{% url 'contact' %}">
+                        {% csrf_token %}
+
+                        <div class="space-y-4 mb-6">
+
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-2 tracking-widest uppercase">Name</label>
+                                <input type="text" name="name" class="input-field" placeholder="Your name" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-2 tracking-widest uppercase">Email</label>
+                                <input type="email" name="email" class="input-field" placeholder="your@email.com" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-2 tracking-widest uppercase">Message</label>
+                                <textarea name="message" rows="5" class="input-field"
+                                    placeholder="How can we help you?" required></textarea>
+                            </div>
+
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            SEND MESSAGE
+                        </button>
+
+                    </form>
+                </div>
+
+                <!-- THANK YOU -->
+                <div class="thankyou-box" id="thankYouBox">
+                    <div class="check-circle">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-3">Message Sent!</h2>
+                    <p class="text-gray-400 text-sm">
+                        Thanks for reaching out. We'll get back to you at <br>
+                        <span class="text-indigo-300">overclockpc@outlook.com</span> within 24 hours.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.getElementById('cForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch("{% url 'contact' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': formData.get('csrfmiddlewaretoken') },
+        body: formData
+    })
+    .then(() => {
+        document.getElementById('contactForm').style.display = 'none';
+        document.getElementById('thankYouBox').style.display = 'block';
+    });
+});
+</script>
+
+{% endblock %}

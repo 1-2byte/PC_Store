@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK - Product Inventory</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+* {
+    cursor: default;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: radial-gradient(circle at 20% 20%, #1e293b, #020617 70%);
+    overflow-x: hidden;
+    color: white;
+    font-family: sans-serif;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15), transparent);
+    filter: blur(140px);
+    top: -100px;
+    left: -100px;
+    z-index: 0;
+}
+
+.glass {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.logo {
+    letter-spacing: 10px;
+}
+
+.product-card {
+    transition: 0.35s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-6px);
+}
+
+.btn {
+    transition: 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+</style>
+</head>
+
+<body>
+
+<div class="max-w-7xl mx-auto pt-14 px-6 relative z-10">
+
+    <div class="text-center mb-10">
+        <h1 class="logo text-3xl font-bold">
+            O V E R C L O C K
+        </h1>
+    </div>
+
+    <div class="flex justify-between items-center mb-10">
+        <h2 class="text-3xl font-semibold">
+            Product Inventory
+        </h2>
+
+        <a href="{% url 'add_product' %}"
+           class="btn bg-indigo-500 px-6 py-3 rounded-full hover:bg-indigo-600">
+            + Add Product
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        {% for product in products %}
+        <div class="product-card glass rounded-3xl p-5">
+
+            <img src="{{ product.image.url }}"
+                 class="w-full h-64 object-fit: contain; rounded-2xl mb-5">
+
+            <h3 class="text-xl font-semibold mb-3">
+                {{ product.name }}
+            </h3>
+
+            <div class="space-y-2 text-sm text-gray-300 mb-6">
+
+                <div class="flex justify-between">
+                    <span>Price</span>
+                    <span>₹{{ product.price }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span>Quantity</span>
+                    <span>{{ product.quantity }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span>Category</span>
+                    <span>{{ product.category }}</span>
+                </div>
+
+            </div>
+
+            <div class="flex gap-3">
+
+                <a href="{% url 'edit_product' product.id %}"
+                   class="bg-indigo-500 px-5 py-2 rounded-full">
+                    Edit
+                </a>
+
+                <a href="{% url 'delete_product' product.id %}"
+                   class="bg-red-500 px-5 py-2 rounded-full">
+                    Delete
+                </a>
+
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

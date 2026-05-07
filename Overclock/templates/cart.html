@@ -1,0 +1,214 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK | Cart</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; cursor:default; }
+body {
+    font-family: Inter, sans-serif;
+    background: radial-gradient(circle at top left, rgba(99,102,241,.10), transparent 40%),
+                radial-gradient(circle at top right, rgba(255,255,255,.04), transparent 30%),
+                #050816;
+    color: white; overflow-x: hidden;
+}
+a, button { cursor:pointer; text-decoration:none; }
+input, textarea, select { cursor:text; }
+::-webkit-scrollbar { width:10px; }
+::-webkit-scrollbar-track { background:#050816; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:20px; }
+.glass { background:rgba(255,255,255,0.035); backdrop-filter:blur(18px); border:1px solid rgba(255,255,255,0.06); }
+.premium-border { border:1px solid rgba(255,255,255,0.08); box-shadow:inset 0 1px 0 rgba(255,255,255,0.03); }
+.build-btn { background:linear-gradient(135deg,#6366f1,#818cf8); transition:.3s ease; }
+.build-btn:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(99,102,241,.22); }
+.qty-btn { width:34px; height:34px; border-radius:50%; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); display:flex; align-items:center; justify-content:center; transition:0.2s ease; font-size:16px; color:#a5b4fc; }
+.qty-btn:hover { background:rgba(99,102,241,0.25); transform:scale(1.08); }
+.remove-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:999px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); color:#fca5a5; font-size:13px; transition:0.25s ease; }
+.remove-btn:hover { background:rgba(239,68,68,0.2); color:white; transform:translateY(-1px); }
+.checkout-btn { width:100%; padding:16px; border-radius:16px; background:linear-gradient(135deg,#6366f1,#4338ca); font-weight:600; font-size:14px; letter-spacing:1.5px; transition:0.3s ease; position:relative; overflow:hidden; }
+.checkout-btn::before { content:""; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(120deg,transparent,rgba(255,255,255,0.15),transparent); transition:0.5s; }
+.checkout-btn:hover::before { left:100%; }
+.checkout-btn:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(99,102,241,0.35); }
+.cart-row { transition:0.25s ease; }
+.cart-row:hover { border-color:rgba(99,102,241,0.2); }
+.cart-row.stock-error { border-color:rgba(239,68,68,0.3) !important; }
+.fade-up { opacity:0; transform:translateY(20px); animation:fadeUp 0.6s ease forwards; }
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<header class="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-black/20">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+        <a href="{% url 'index' %}" class="text-xl md:text-2xl font-semibold tracking-[0.45em]">OVERCLOCK</a>
+        <nav class="hidden lg:flex items-center gap-8 text-sm text-gray-300">
+            <a href="{% url 'index' %}" class="hover:text-white transition">Home</a>
+            <div class="relative group z-50">
+                <button class="hover:text-white transition flex items-center gap-2 px-2 py-1">Products <i class="fa-solid fa-chevron-down text-xs"></i></button>
+                <div class="absolute top-full left-0 mt-3 w-64 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999] max-h-[420px] overflow-y-auto">
+                    <a href="{% url 'all_products' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">All Products</a>
+                    <a href="{% url 'all_products' %}?category=Prebuilt+PCs" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Prebuilt PCs</a>
+                    <a href="{% url 'all_products' %}?category=Gaming+Laptops" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Gaming Laptops</a>
+                    <a href="{% url 'all_products' %}?category=Custom+Builds" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Custom Builds</a>
+                    <a href="{% url 'all_products' %}?category=GPUs" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">GPUs</a>
+                    <a href="{% url 'all_products' %}?category=CPUs" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">CPUs</a>
+                    <a href="{% url 'all_products' %}?category=RAM" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">RAM</a>
+                    <a href="{% url 'all_products' %}?category=SSDs" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">SSDs</a>
+                    <a href="{% url 'all_products' %}?category=Motherboards" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Motherboards</a>
+                    <a href="{% url 'all_products' %}?category=Cooling" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Cooling</a>
+                    <a href="{% url 'all_products' %}?category=Monitors" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Monitors</a>
+                    <a href="{% url 'all_products' %}?category=Keyboards" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Keyboards</a>
+                    <a href="{% url 'all_products' %}?category=Mouse" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Mouse</a>
+                    <a href="{% url 'all_products' %}?category=Headsets" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Headsets</a>
+                    <a href="{% url 'all_products' %}?category=Streaming+Gear" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Streaming Gear</a>
+                    <a href="{% url 'all_products' %}?category=Gaming+Chair" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Gaming Chair</a>
+                </div>
+            </div>
+            <a href="{% url 'index' %}#about" class="hover:text-white transition">About</a>
+            <a href="{% url 'cart' %}" class="text-white transition" title="Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+            <div class="relative group z-50">
+                <button class="hover:text-white transition px-2 py-1" title="Support"><i class="fa-solid fa-headset text-lg"></i></button>
+                <div class="absolute right-0 top-full mt-3 w-52 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999]">
+                    <a href="{% url 'feedback' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Feedback</a>
+                    <a href="{% url 'contact' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Contact Us</a>
+                </div>
+            </div>
+            <div class="relative group z-50">
+                <button class="hover:text-white transition px-2 py-1"><i class="fa-regular fa-user text-lg"></i></button>
+                <div class="absolute right-0 top-full mt-3 w-48 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999]">
+                    <a href="{% url 'profile' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Profile</a>
+                    <a href="{% url 'logout' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Logout</a>
+                </div>
+            </div>
+        </nav>
+        <a href="#" class="build-btn px-6 py-3 rounded-2xl text-sm font-medium">Build Your Dream PC</a>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 pt-12 pb-24">
+
+    <div class="mb-10 fade-up">
+        <p class="text-sm text-indigo-300 mb-2 tracking-[0.25em] uppercase">Your Selection</p>
+        <h1 class="text-4xl md:text-5xl font-semibold">My Cart</h1>
+        <p class="text-gray-400 mt-3 text-base">Review your items before checking out.</p>
+    </div>
+
+    {% if cart_items %}
+
+    <div class="grid lg:grid-cols-[1fr_340px] gap-8 items-start">
+
+        <div class="space-y-4">
+            {% for item in cart_items %}
+            <div class="cart-row glass premium-border rounded-3xl p-5 fade-up {% if item.exceeds_stock %}stock-error{% endif %}"
+                 style="animation-delay:{{ forloop.counter0 }}00ms">
+                <div class="flex gap-5 items-center">
+                    <div class="w-28 h-28 flex-shrink-0 rounded-2xl overflow-hidden flex items-center justify-center bg-white/[0.03] border border-white/5">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-contain p-2">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-semibold leading-snug mb-1 truncate">{{ item.product.name }}</h3>
+                        <div class="flex items-center gap-2 mb-3 flex-wrap">
+                            <span class="inline-block text-xs px-3 py-1 rounded-full" style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.2);color:#a5b4fc;">{{ item.product.category }}</span>
+                            {% if item.is_digital %}
+                            <span class="inline-block text-xs px-3 py-1 rounded-full" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;">
+                                <i class="fa-solid fa-envelope mr-1"></i> Via Email
+                            </span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm text-gray-400">₹{{ item.product.price|floatformat:0 }} / unit</p>
+                        <div class="flex items-center gap-3 mt-4">
+                            <form method="POST" action="{% url 'decrease_cart' item.id %}">{% csrf_token %}<button type="submit" class="qty-btn">−</button></form>
+                            <span class="text-base font-semibold w-6 text-center">{{ item.quantity }}</span>
+                            <form method="POST" action="{% url 'increase_cart' item.id %}">{% csrf_token %}<button type="submit" class="qty-btn">+</button></form>
+                        </div>
+                        {% if item.exceeds_stock %}
+                        <p class="text-xs mt-3 flex items-center gap-1.5" style="color:#f87171;">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            Only {{ item.stock_left }} unit{% if item.stock_left != 1 %}s{% endif %} left in stock. Please reduce quantity.
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <p class="text-xs text-gray-500 mb-1 uppercase tracking-wider">Subtotal</p>
+                        <p class="text-2xl font-semibold text-white mb-4">₹{{ item.total_price|floatformat:0 }}</p>
+                        <form method="POST" action="{% url 'delete_cart' item.id %}">{% csrf_token %}
+                            <button type="submit" class="remove-btn"><i class="fa-solid fa-trash-can text-xs"></i> Remove</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="glass premium-border rounded-3xl p-6 sticky top-28 fade-up">
+            <h2 class="text-xl font-semibold mb-6">Order Summary</h2>
+            <div class="space-y-3 mb-6 text-sm text-gray-400">
+                {% for item in cart_items %}
+                <div class="flex justify-between">
+                    <span class="truncate max-w-[160px]">
+                        {{ item.product.name }} × {{ item.quantity }}
+                        {% if item.is_digital %}<span class="text-indigo-400 text-xs ml-1"><i class="fa-solid fa-key"></i></span>{% endif %}
+                    </span>
+                    <span class="text-white font-medium">₹{{ item.total_price|floatformat:0 }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="border-t border-white/5 pt-4 space-y-3 mb-6">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-400">Subtotal</span>
+                    <span class="text-white">₹{{ total_price }}</span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-400">Delivery</span>
+                    {% if delivery_fee == 0 %}
+                        <span class="text-green-400 font-medium">Free</span>
+                    {% else %}
+                        <span class="text-white">₹{{ delivery_fee }}</span>
+                    {% endif %}
+                </div>
+                {% if delivery_fee > 0 %}
+                <p class="text-xs text-indigo-300">Add ₹{{ delivery_remaining }} more for free delivery</p>
+                {% endif %}
+                <div class="flex justify-between items-center pt-3 border-t border-white/5">
+                    <span class="text-gray-300 font-medium">Total</span>
+                    <span class="text-3xl font-bold text-white">₹{{ grand_total }}</span>
+                </div>
+            </div>
+
+            {% if has_stock_issue %}
+            <div class="w-full py-4 rounded-2xl text-center text-sm font-semibold"
+                 style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); color:#fca5a5;">
+                <i class="fa-solid fa-triangle-exclamation mr-2"></i> checkout
+            </div>
+            {% else %}
+            <a href="{% url 'checkout' %}" class="block checkout-btn uppercase tracking-widest text-center">Proceed to Checkout</a>
+            {% endif %}
+
+            <a href="{% url 'all_products' %}" class="block text-center mt-4 text-sm text-gray-500 hover:text-gray-300 transition">← Continue Shopping</a>
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="glass premium-border rounded-3xl p-20 text-center fade-up max-w-2xl mx-auto mt-10">
+        <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);">
+            <i class="fa-solid fa-cart-shopping text-3xl text-indigo-400"></i>
+        </div>
+        <h2 class="text-3xl font-semibold mb-3">Your cart is empty</h2>
+        <p class="text-gray-400 mb-8">Looks like you haven't added anything yet.</p>
+        <a href="{% url 'all_products' %}" class="inline-block build-btn px-8 py-4 rounded-2xl text-sm font-medium">Shop Now</a>
+    </div>
+
+    {% endif %}
+
+</main>
+
+<footer class="text-center py-10 text-gray-500 text-sm">© 2026 OVERCLOCK — Built for Performance</footer>
+
+</body>
+</html>

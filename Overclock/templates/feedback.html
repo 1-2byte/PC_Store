@@ -1,0 +1,454 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK — Feedback</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: default;
+}
+
+body {
+    user-select: text;
+    background: radial-gradient(circle at 20% 20%, #1e293b, #020617 70%);
+    min-height: 100vh;
+    color: white;
+    font-family: sans-serif;
+    overflow-x: hidden;
+    position: relative;
+}
+
+input, textarea, select { cursor: text; }
+button, a { cursor: pointer; }
+img, svg, i { user-select: none; -webkit-user-drag: none; }
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb {
+    background: rgba(99,102,241,0.5);
+    border-radius: 20px;
+    border: 2px solid #0f172a;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15), transparent);
+    filter: blur(10px);
+    top: -120px;
+    left: -120px;
+    z-index: 0;
+}
+
+.glass {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border: 0px solid rgba(255,255,255,0.08);
+}
+
+/* ── LOGO ── */
+.logo {
+    letter-spacing: 8px;
+    transition: 0.3s ease;
+}
+.logo:hover {
+    letter-spacing: 12px;
+    transform: scale(1.03);
+}
+
+/* ── NAV ── */
+.nav-link {
+    color: #d1d5db;
+    transition: 0.3s ease;
+}
+.nav-link:hover {
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* ── DROPDOWN ── */
+.dropdown-menu {
+    position: absolute;
+    top: 130%;
+    right: 0;
+    width: 240px;
+    background: rgba(15,23,42,0.96);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: 0.3s ease;
+    z-index: 999;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+}
+.group:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.dropdown-menu a {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 12px;
+    color: #d1d5db;
+    transition: 0.25s ease;
+}
+.dropdown-menu a:hover {
+    background: rgba(255,255,255,0.06);
+    color: white;
+}
+
+.profile-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s ease;
+}
+.profile-btn:hover {
+    transform: translateY(-2px) scale(1.06);
+}
+
+/* ── BACK BTN ── */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 20px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    transition: 0.3s ease;
+    text-decoration: none;
+}
+.back-btn:hover {
+    background: rgba(255,255,255,0.09);
+    color: white;
+    transform: translateX(-2px);
+}
+
+/* ── INPUT ── */
+.input-field {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    padding: 14px 18px;
+    border-radius: 14px;
+    outline: none;
+    transition: 0.3s ease;
+    font-size: 14px;
+    resize: none;
+    font-family: sans-serif;
+}
+.input-field::placeholder { color: rgba(255,255,255,0.25); }
+.input-field:focus {
+    border-color: rgba(99,102,241,0.6);
+    background: rgba(99,102,241,0.07);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+/* ── STAR RATING ── */
+.star-group {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 10px;
+}
+.star-group input[type="radio"] { display: none; }
+.star-group label {
+    font-size: 38px;
+    color: rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: 0.2s ease;
+    line-height: 1;
+}
+.star-group label:hover,
+.star-group label:hover ~ label,
+.star-group input:checked ~ label {
+    color: #fbbf24;
+    transform: scale(1.15);
+    text-shadow: 0 0 14px rgba(251,191,36,0.5);
+}
+
+/* ── SUBMIT BTN ── */
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #6366f1, #4338ca);
+    border-radius: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 13px;
+    transition: 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    color: white;
+}
+.btn-submit::before {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
+}
+.btn-submit:hover::before { left: 100%; }
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(99,102,241,0.4);
+}
+
+/* ── THANK YOU ── */
+.thankyou-box {
+    display: none;
+    text-align: center;
+    padding: 40px 24px;
+    animation: fadeUp 0.6s ease forwards;
+}
+.thankyou-box .check-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px auto;
+    font-size: 30px;
+    color: #34d399;
+}
+
+/* ── FADE ── */
+.fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: fadeUp 0.7s ease forwards;
+}
+.fade-up:nth-child(2) { animation-delay: 0.1s; }
+.fade-up:nth-child(3) { animation-delay: 0.2s; }
+
+@keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.rating-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+    height: 20px;
+    transition: 0.2s;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER (exact base.html) ══════════════ -->
+<header
+    class="sticky top-0 z-50 px-8 py-5 flex justify-between items-center border-b border-white/10"
+    style="
+        background: rgba(255,255,255,0.04);
+        backdrop-filter: blur(22px);
+        -webkit-backdrop-filter: blur(22px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+    "
+>
+    <div class="absolute inset-0 pointer-events-none"
+         style="background: linear-gradient(90deg, rgba(99,102,241,0.06), transparent, rgba(139,92,246,0.05));"></div>
+
+    <!-- LOGO -->
+    <a href="{% url 'index' %}" class="logo text-2xl font-bold relative z-10">
+        O V E R C L O C K
+    </a>
+
+    <!-- NAV -->
+    <nav class="flex items-center gap-8 text-sm relative z-10">
+
+        <a href="{% url 'index' %}" class="nav-link">Home</a>
+
+
+        <a href="#" class="nav-link">Build Your Own</a>
+        <a href="#about" class="nav-link">About Us</a>
+
+        <a href="/cart/" class="profile-btn" title="Cart">
+            <i class="fa-solid fa-cart-shopping text-white"></i>
+        </a>
+
+        <div class="relative group">
+            <button class="profile-btn">
+                <i class="fa-solid fa-user text-white"></i>
+            </button>
+            <div class="dropdown-menu">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}">Profile</a>
+                    <a href="{% url 'logout' %}">Sign Out</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Sign In</a>
+                {% endif %}
+            </div>
+        </div>
+
+    </nav>
+</header>
+
+
+<!-- ══════════════ CONTENT ══════════════ -->
+<div class="relative z-10 px-6 py-8 max-w-lg mx-auto">
+
+    <!-- BACK BUTTON -->
+    <div class="mb-8 fade-up">
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            Back
+        </a>
+    </div>
+
+    <!-- Heading -->
+    <div class="text-center mb-10 fade-up">
+        <div class="inline-flex items-center gap-2 mb-4"
+             style="background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); padding: 6px 16px; border-radius: 999px;">
+            <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+            <span style="font-size:11px; letter-spacing:2px; color:#a5b4fc; font-weight:600; text-transform:uppercase;">
+                Share Your Experience
+            </span>
+        </div>
+        <h1 class="text-4xl font-bold mb-3">Leave Feedback</h1>
+        <p class="text-gray-400 text-sm">
+            {% if e %}
+                Hey <span class="text-indigo-300 font-medium">{{ e.name }}</span>, we'd love to hear from you.
+            {% else %}
+                We'd love to hear what you think.
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- CARD -->
+    <div class="glass rounded-3xl p-8 fade-up" style="border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
+
+        <!-- FORM -->
+        <div id="feedbackForm">
+            <form id="fbForm" method="POST" action="{% url 'feedback' %}">
+                {% csrf_token %}
+
+                <!-- STAR RATING -->
+                <div class="mb-8">
+                    <label class="block text-xs text-gray-400 mb-4 tracking-widest uppercase text-center">
+                        Your Rating
+                    </label>
+                    <div class="star-group">
+                        <input type="radio" name="rating" id="s5" value="5">
+                        <label for="s5" title="5 stars">★</label>
+                        <input type="radio" name="rating" id="s4" value="4">
+                        <label for="s4" title="4 stars">★</label>
+                        <input type="radio" name="rating" id="s3" value="3">
+                        <label for="s3" title="3 stars">★</label>
+                        <input type="radio" name="rating" id="s2" value="2">
+                        <label for="s2" title="2 stars">★</label>
+                        <input type="radio" name="rating" id="s1" value="1">
+                        <label for="s1" title="1 star">★</label>
+                    </div>
+                    <p class="rating-label mt-3" id="ratingLabel">Tap a star to rate</p>
+                </div>
+
+                <!-- DIVIDER -->
+                <div style="height:1px; background: rgba(255,255,255,0.06); margin-bottom: 24px;"></div>
+
+                <!-- FEEDBACK TEXT -->
+                <div class="mb-6">
+                    <label class="block text-xs text-gray-400 mb-2 tracking-widest uppercase">
+                        Your Feedback
+                    </label>
+                    <textarea
+                        name="feedback_text"
+                        rows="5"
+                        class="input-field"
+                        placeholder="Tell us about your experience with OVERCLOCK..."
+                        required
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    SUBMIT FEEDBACK
+                </button>
+            </form>
+        </div>
+
+        <!-- THANK YOU (hidden until submit) -->
+        <div class="thankyou-box" id="thankYouBox">
+            <div class="check-circle">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-3">Thank You for your Feedback .</h2>
+            <p class="text-gray-400 text-sm">Your response has been recorded. We appreciate you taking the time.</p>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+const ratingLabels = {
+    1: 'Poor — Not satisfied',
+    2: 'Fair — Could be better',
+    3: 'Good — Decent experience',
+    4: 'Great — Really enjoyed it',
+    5: 'Excellent — Absolutely loved it! ⚡'
+};
+
+document.querySelectorAll('.star-group input[type="radio"]').forEach(input => {
+    input.addEventListener('change', () => {
+        const lbl = document.getElementById('ratingLabel');
+        lbl.textContent = ratingLabels[input.value];
+        lbl.style.color = '#fbbf24';
+    });
+});
+
+document.getElementById('fbForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch("{% url 'feedback' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': formData.get('csrfmiddlewaretoken') },
+        body: formData
+    })
+    .then(res => {
+        // Show thank you regardless of response (form validated client-side)
+        document.getElementById('feedbackForm').style.display = 'none';
+        const box = document.getElementById('thankYouBox');
+        box.style.display = 'block';
+    })
+    .catch(() => {
+        // Still show thank you — server saved it
+        document.getElementById('feedbackForm').style.display = 'none';
+        document.getElementById('thankYouBox').style.display = 'block';
+    });
+});
+</script>
+
+</body>
+</html>

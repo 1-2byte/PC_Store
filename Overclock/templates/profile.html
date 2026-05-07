@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVERCLOCK Profile</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+/* BACKGROUND */
+body {
+    background: radial-gradient(circle at 20% 20%, #1e293b, #020617 70%);
+}
+
+/* Glow */
+body::before {
+    content: "";
+    position: fixed;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15), transparent);
+    filter: blur(120px);
+    top: -100px;
+    left: -100px;
+}
+
+/* GLASS */
+.glass {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ANIMATION */
+.fade {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.8s ease forwards;
+}
+
+.fade:nth-child(1){animation-delay:0.2s;}
+.fade:nth-child(2){animation-delay:0.4s;}
+.fade:nth-child(3){animation-delay:0.6s;}
+
+@keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* INPUT */
+.input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+}
+
+/* BUTTON */
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+.btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
+    transform: translateX(-100%);
+    transition: 0.5s;
+}
+.btn:hover::before {
+    transform: translateX(100%);
+}
+
+</style>
+</head>
+
+<body class="text-white font-sans">
+
+<!-- HEADER -->
+<header class="fixed w-full z-50 glass">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+        <h1 class="text-lg font-bold tracking-widest">O V E R C L O C K</h1>
+
+        <a href="{% url 'logout' %}" 
+           class="text-red-400 text-sm hover:text-red-500 transition">
+           Logout
+        </a>
+    </div>
+</header>
+
+<!-- CONTENT -->
+<div class="max-w-4xl mx-auto pt-32 px-6">
+
+    <!-- PROFILE CARD -->
+    <div class="glass rounded-2xl p-8 fade">
+
+        <h2 class="text-2xl font-semibold mb-6">Profile</h2>
+
+        <div class="space-y-4">
+
+            <div class="flex justify-between border-b border-white/10 pb-2">
+                <span class="text-gray-400">Name</span>
+                <span>{{ user.name }}</span>
+            </div>
+
+            <div class="flex justify-between border-b border-white/10 pb-2">
+                <span class="text-gray-400">Email</span>
+                <span>{{ user.email }}</span>
+            </div>
+
+            <div class="flex justify-between border-b border-white/10 pb-2">
+                <span class="text-gray-400">Phone</span>
+                <span>{{ user.phone }}</span>
+            </div>
+
+            <div class="flex justify-between border-b border-white/10 pb-2">
+                <span class="text-gray-400">Address</span>
+                <span class="text-right max-w-[60%]">{{ user.address }}</span>
+            </div>
+
+        </div>
+
+        <!-- BUTTON -->
+        <div class="mt-8">
+            <button onclick="toggleEditBox()" 
+                class="btn bg-indigo-500 px-6 py-2 rounded-full text-sm hover:bg-indigo-600 transition">
+                Edit Profile
+            </button>
+        </div>
+
+    </div>
+
+    <!-- EDIT BOX -->
+    <div id="editBox" 
+         class="hidden mt-6 glass rounded-2xl p-8 fade">
+
+        <h3 class="text-xl mb-6">Edit Profile</h3>
+
+        <form method="POST" action="{% url 'editprofile' %}" class="space-y-4">
+            {% csrf_token %}
+
+            <input type="text" name="name" value="{{ user.name }}"
+                class="input w-full px-4 py-2 rounded" placeholder="Name">
+
+            <input type="text" name="phone" value="{{ user.phone }}"
+                class="input w-full px-4 py-2 rounded" placeholder="Phone">
+
+            <input type="text" name="location" value="{{ user.address }}"
+                class="input w-full px-4 py-2 rounded" placeholder="Address">
+
+            <div class="flex gap-3 mt-4">
+                <button type="submit"
+                    class="bg-green-500 px-5 py-2 rounded-full text-sm hover:bg-green-600 transition">
+                    Save
+                </button>
+
+                <button type="button" onclick="toggleEditBox()"
+                    class="bg-white/10 px-5 py-2 rounded-full text-sm hover:bg-white/20 transition">
+                    Cancel
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+</div>
+
+<!-- SCRIPT -->
+<script>
+function toggleEditBox() {
+    const box = document.getElementById('editBox');
+    box.classList.toggle('hidden');
+}
+</script>
+
+</body>
+</html>

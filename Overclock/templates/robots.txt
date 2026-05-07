@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin-home/
+Disallow: /admin-login/
+Disallow: /adminhome/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /profile/
+Disallow: /order-history/
+
+Sitemap: https://overclock.store/sitemap.xml
