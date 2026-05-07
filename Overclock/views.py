@@ -153,6 +153,8 @@ def products(request):
         'edit_product_obj':  edit_product_obj,
     })
 
+
+
 def add_to_cart(request, id):
     product = get_object_or_404(Product, id=id)
     email = request.session.get('email')
