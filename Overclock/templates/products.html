@@ -55,6 +55,62 @@ select.input-field option { background:#0f172a; color:white; }
 input[type=text], input[type=number], textarea, select { cursor:text; }
 button, a { cursor:pointer; }
 
+/* ── QUANTITY STEPPER ── */
+.qty-stepper {
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.05);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.qty-stepper:focus-within {
+    border-color: rgba(99,102,241,0.6);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+    background: rgba(99,102,241,0.07);
+}
+.qty-stepper input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: white;
+    text-align: center;
+    padding: 11px 4px;
+    font-size: 14px;
+}
+.qty-stepper input[type=number]::-webkit-inner-spin-button,
+.qty-stepper input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+.qty-btn {
+    flex-shrink: 0;
+    width: 36px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99,102,241,0.12);
+    color: #a5b4fc;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    padding: 11px 0;
+    line-height: 1;
+    user-select: none;
+}
+.qty-btn:hover {
+    background: rgba(99,102,241,0.28);
+    color: white;
+}
+
 /* modal backdrop */
 .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
 .modal-box { background:#0b1120; border:1px solid rgba(255,255,255,0.1); border-radius:24px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; padding:32px; }
@@ -213,11 +269,37 @@ button, a { cursor:pointer; }
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Price (₹)</label>
-                    <input type="number" name="price" step="0.01" min="0" class="input-field" placeholder="0.00" required>
+
+                    <div class="qty-stepper">
+                        <button type="button"
+                                class="qty-btn"
+                                onclick="stepPrice('addPrice', -100)">
+                            −
+                        </button>
+
+                        <input type="number"
+                            name="price"
+                            id="addPrice"
+                            step="0.01"
+                            min="0"
+                            placeholder="0.00"
+                            class="bg-transparent w-full text-center outline-none"
+                            required>
+
+                        <button type="button"
+                                class="qty-btn"
+                                onclick="stepPrice('addPrice', 100)">
+                            +
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Quantity</label>
-                    <input type="number" name="quantity" min="0" class="input-field" placeholder="0" required>
+                    <div class="qty-stepper">
+                        <button type="button" class="qty-btn" onclick="stepQty('addQuantity', -1)">−</button>
+                        <input type="number" name="quantity" id="addQuantity" min="0" placeholder="0" required>
+                        <button type="button" class="qty-btn" onclick="stepQty('addQuantity', 1)">+</button>
+                    </div>
                 </div>
             </div>
             <div>
@@ -287,11 +369,37 @@ button, a { cursor:pointer; }
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Price (₹)</label>
-                    <input type="number" name="price" id="editPrice" step="0.01" min="0" class="input-field" required>
+
+                    <div class="qty-stepper">
+                        <button type="button"
+                                class="qty-btn"
+                                onclick="stepPrice('editPrice', -100)">
+                            −
+                        </button>
+
+                        <input type="number"
+                            name="price"
+                            id="editPrice"
+                            step="0.01"
+                            min="0"
+                            class="bg-transparent w-full text-center outline-none"
+                            placeholder="0.00"
+                            required>
+
+                        <button type="button"
+                                class="qty-btn"
+                                onclick="stepPrice('editPrice', 100)">
+                            +
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs text-gray-400 mb-2 uppercase tracking-widest">Quantity</label>
-                    <input type="number" name="quantity" id="editQuantity" min="0" class="input-field" required>
+                    <div class="qty-stepper">
+                        <button type="button" class="qty-btn" onclick="stepQty('editQuantity', -1)">−</button>
+                        <input type="number" name="quantity" id="editQuantity" min="0" required>
+                        <button type="button" class="qty-btn" onclick="stepQty('editQuantity', 1)">+</button>
+                    </div>
                 </div>
             </div>
             <div>
@@ -455,6 +563,38 @@ addBox.addEventListener('drop', e => {
         showPreview(e.dataTransfer.files[0], 'addPreviewImage', 'addPreviewWrapper', 'addUploadContent');
     }
 });
+
+// ── QTY STEPPER ──
+function stepQty(inputId, delta) {
+    const el = document.getElementById(inputId);
+    const current = parseInt(el.value) || 0;
+    const next = Math.max(0, current + delta);
+    el.value = next;
+}
+
+// ── PRICE STEPPER ──
+function stepPrice(inputId, delta) {
+
+    const input = document.getElementById(inputId);
+
+    if (!input) return;
+
+    let value = parseFloat(input.value);
+
+    if (isNaN(value)) {
+        value = 0;
+    }
+
+    value += delta;
+
+    if (value < 0) {
+        value = 0;
+    }
+
+    input.value = value.toFixed(2);
+
+    input.dispatchEvent(new Event('input'));
+}
 </script>
 
 </body>

@@ -383,7 +383,7 @@ def adminhome(request):
     total_cart_items = Cart.objects.count()
  
     recent_products  = Product.objects.order_by('-created_at')[:6]
-    recent_carts     = Cart.objects.select_related('user', 'product').order_by('-created_at')[:8]
+    recent_orders    = Order.objects.prefetch_related('items').order_by('-created_at')[:8]
     feedbacks        = Feedback.objects.order_by('-created_at')
     contact_messages = ContactMessage.objects.order_by('-created_at')
  
@@ -392,7 +392,7 @@ def adminhome(request):
         'total_users':      total_users,
         'total_cart_items': total_cart_items,
         'recent_products':  recent_products,
-        'recent_carts':     recent_carts,
+        'recent_orders':    recent_orders,
         'feedbacks':        feedbacks,
         'contact_messages': contact_messages,
     })

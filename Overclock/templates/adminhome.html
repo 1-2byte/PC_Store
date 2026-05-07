@@ -496,49 +496,62 @@ button, a { cursor: pointer; }
         </div>
 
 
-        <!-- Recent Cart Activity (2/3) -->
+        <!-- Recent Orders (2/3) -->
         <div class="lg:col-span-2 fade-up">
             <h3 class="text-sm font-semibold tracking-widest uppercase text-gray-400 mb-4">
-                Recent Cart Activity
+                Recent Orders
             </h3>
 
             <div class="glass rounded-2xl overflow-hidden">
 
-                {% if recent_carts %}
+                {% if recent_orders %}
                 <table class="activity-table">
                     <thead>
                         <tr>
-                            <th>User</th>
-                            <th>Product</th>
-                            <th>Qty</th>
+                            <th>Order ID</th>
+                            <th>Customer</th>
                             <th>Total</th>
-                            <th>Added</th>
+                            <th>Status</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for item in recent_carts %}
-                        <tr>
+                        {% for order in recent_orders %}
+                        <tr style="cursor:pointer;"
+                            onclick="window.location='{% url 'admin_orders' %}#order-{{ order.order_id }}'">
                             <td>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                                         style="background: rgba(99,102,241,0.2); color: #a5b4fc;">
-                                        {{ item.user.name|first|upper }}
-                                    </div>
-                                    {{ item.user.name }}
-                                </div>
-                            </td>
-                            <td>{{ item.product.name }}</td>
-                            <td>
-                                <span class="badge"
-                                      style="background: rgba(99,102,241,0.15); color: #a5b4fc;">
-                                    × {{ item.quantity }}
+                                <span class="font-mono text-indigo-400 font-semibold text-xs">
+                                    {{ order.order_id }}
                                 </span>
                             </td>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                         style="background: rgba(99,102,241,0.2); color: #a5b4fc;">
+                                        {{ order.full_name|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="text-white text-sm font-medium">{{ order.full_name }}</div>
+                                        <div class="text-gray-500 text-xs">{{ order.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
                             <td class="font-semibold" style="color: white;">
-                                ₹{% widthratio item.product.price 1 item.quantity %}
+                                ₹{{ order.grand_total }}
+                            </td>
+                            <td>
+                                {% if order.status == 'Pending' %}
+                                    <span class="badge" style="background:rgba(234,179,8,0.15); color:#fde047;">● Pending</span>
+                                {% elif order.status == 'Processing' %}
+                                    <span class="badge" style="background:rgba(59,130,246,0.15); color:#93c5fd;">● Processing</span>
+                                {% elif order.status == 'Shipped' %}
+                                    <span class="badge" style="background:rgba(168,85,247,0.15); color:#d8b4fe;">● Shipped</span>
+                                {% elif order.status == 'Delivered' %}
+                                    <span class="badge" style="background:rgba(34,197,94,0.15); color:#86efac;">● Delivered</span>
+                                {% endif %}
                             </td>
                             <td class="text-xs text-gray-500">
-                                {{ item.created_at|date:"M d, Y" }}
+                                {{ order.created_at|date:"M d, Y" }}
                             </td>
                         </tr>
                         {% endfor %}
@@ -547,8 +560,8 @@ button, a { cursor: pointer; }
 
                 {% else %}
                 <div class="text-center py-16 text-gray-500">
-                    <i class="fa-solid fa-cart-shopping text-4xl mb-4 block opacity-20"></i>
-                    No cart activity yet.
+                    <i class="fa-solid fa-receipt text-4xl mb-4 block opacity-20"></i>
+                    No orders yet.
                 </div>
                 {% endif %}
 
