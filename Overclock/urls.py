@@ -41,6 +41,7 @@ urlpatterns= [
     path('adminhome/promos/toggle/<int:id>/', views.toggle_promo, name='toggle_promo'),
     path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
     path('remove-coupon/', views.remove_coupon, name='remove_coupon'),
+    path('build-pc/', views.build_pc, name='build_pc'),
 ]
 
 

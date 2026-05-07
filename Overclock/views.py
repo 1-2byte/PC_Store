@@ -154,7 +154,6 @@ def products(request):
     })
 
 
-
 def add_to_cart(request, id):
     product = get_object_or_404(Product, id=id)
     email = request.session.get('email')
@@ -910,3 +909,7 @@ def remove_coupon(request):
         request.session.pop('applied_coupon', None)
         request.session.pop('discount_amount', None)
     return redirect('checkout')
+
+
+def build_pc(request):
+    return render(request, 'buildpc.html')
