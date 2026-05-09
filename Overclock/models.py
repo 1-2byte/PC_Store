@@ -9,6 +9,7 @@ class User(models.Model):
     password = models.CharField(max_length=128)
     address = models.CharField(max_length=200)
     phone=models.IntegerField()
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     def __str__(self):
         return f"{self.name}"
 

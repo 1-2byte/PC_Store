@@ -85,6 +85,29 @@
             border-color: rgba(99,102,241,.35);
             background: rgba(99,102,241,.08);
         }
+
+        /* ── Product Modal ── */
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            opacity: 0; visibility: hidden; transition: 0.25s ease;
+        }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .modal-box {
+            width: 100%; max-width: 780px; max-height: 90vh; overflow-y: auto;
+            background: #0b1120; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 28px; padding: 32px;
+            transform: translateY(24px) scale(0.97); transition: 0.28s ease;
+        }
+        .modal-overlay.open .modal-box { transform: translateY(0) scale(1); }
+        .modal-img {
+            width: 100%; height: 300px; object-fit: contain;
+            background: rgba(255,255,255,0.03); border-radius: 18px; padding: 16px;
+        }
+        .stock-badge-in  { background:rgba(34,197,94,0.12);  border:1px solid rgba(34,197,94,0.3);  color:#86efac; }
+        .stock-badge-out { background:rgba(239,68,68,0.12);  border:1px solid rgba(239,68,68,0.3);  color:#fca5a5; }
     </style>
 </head>
 <body>
@@ -127,7 +150,7 @@
                 </div>
             </div>
 
-            <a href="{% url 'index' %}#about" class="hover:text-white transition">About</a>
+            <a href="{% url 'about' %}" class="hover:text-white transition">About</a>
 
             <a href="{% url 'cart' %}" class="hover:text-white transition" title="Cart">
                 <i class="fa-solid fa-cart-shopping"></i>
@@ -268,7 +291,18 @@
             <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
 
                 {% for product in products %}
-                <div class="product-card glass premium-border rounded-3xl p-5 group">
+                <div class="product-card glass premium-border rounded-3xl p-5 group"
+                     style="cursor:pointer;"
+                     onclick="openModal(this)"
+                     data-id="{{ product.id }}"
+                     data-name="{{ product.name }}"
+                     data-img="{{ product.image.url }}"
+                     data-price="{% if product.has_promo %}{{ product.promo_price_formatted }}{% else %}{{ product.formatted_price }}{% endif %}"
+                     data-orig="{% if product.has_promo %}{{ product.formatted_price }}{% endif %}"
+                     data-promo="{% if product.has_promo %}{{ product.promo_label }}{% endif %}"
+                     data-desc="{{ product.description }}"
+                     data-stock="{{ product.quantity }}"
+                     data-cat="{{ product.category }}">
 
                     <div class="rounded-3xl bg-white/[0.02] p-4 mb-5 overflow-hidden">
                         <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image group-hover:scale-105 transition duration-500">
@@ -302,7 +336,7 @@
                     <div class="mt-6 flex items-center justify-between">
 
                         {% if product.id in cart_product_ids %}
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-3" onclick="event.stopPropagation()">
                             <a href="{% url 'decrease_cart' product.id %}" class="w-10 h-10 rounded-full glass flex items-center justify-center">
                                 <i class="fa-solid fa-minus text-xs"></i>
                             </a>
@@ -320,14 +354,18 @@
                             </a>
                         </div>
                         {% else %}
-                        <a href="{% url 'add_to_cart' product.id %}" class="w-11 h-11 rounded-full build-btn flex items-center justify-center" title="Add to Cart">
-                            <i class="fa-solid fa-cart-shopping text-sm"></i>
-                        </a>
+                            {% if product.quantity > 0 %}
+                            <a href="{% url 'add_to_cart' product.id %}" class="w-11 h-11 rounded-full build-btn flex items-center justify-center" title="Add to Cart"
+                               onclick="event.stopPropagation()">
+                                <i class="fa-solid fa-cart-shopping text-sm"></i>
+                            </a>
+                            {% else %}
+                            <span class="w-11 h-11 rounded-full flex items-center justify-center cursor-not-allowed opacity-40" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.2);" title="Out of Stock">
+                                <i class="fa-solid fa-cart-shopping text-sm"></i>
+                            </span>
+                            {% endif %}
                         {% endif %}
 
-                        <button class="text-gray-400 hover:text-white transition" title="Quick Preview">
-                            <i class="fa-solid fa-expand"></i>
-                        </button>
                     </div>
                 </div>
                 {% endfor %}
@@ -347,5 +385,95 @@
     </div>
 </section>
 
+
+<!-- PRODUCT MODAL -->
+<div id="productModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-box">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <p id="modalCat" class="text-xs text-indigo-400 uppercase tracking-widest mb-1"></p>
+                <h2 id="modalName" class="text-2xl font-bold leading-snug"></h2>
+            </div>
+            <button onclick="closeModal()" class="text-gray-500 hover:text-white transition ml-4 mt-1">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        <div class="grid md:grid-cols-2 gap-8">
+            <div>
+                <img id="modalImg" class="modal-img" src="" alt="">
+            </div>
+            <div class="flex flex-col justify-between gap-6">
+                <div>
+                    <div id="modalPriceBlock" class="mb-4"></div>
+                    <p id="modalDesc" class="text-sm text-gray-300 leading-7"></p>
+                </div>
+                <div class="space-y-3">
+                <div id="modalStock" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"></div>
+                    <div id="modalCartBtn" class="pt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openModal(card) {
+    const m = document.getElementById('productModal');
+    document.getElementById('modalName').textContent  = card.dataset.name;
+    document.getElementById('modalCat').textContent   = card.dataset.cat;
+    document.getElementById('modalImg').src           = card.dataset.img;
+    document.getElementById('modalImg').alt           = card.dataset.name;
+    document.getElementById('modalDesc').textContent  = card.dataset.desc;
+
+    let priceHtml = '';
+    if (card.dataset.promo) {
+        priceHtml = '<div class="flex items-center gap-3 flex-wrap">'
+            + '<span class="text-gray-500 text-base line-through">&#8377;' + card.dataset.orig + '</span>'
+            + '<span class="text-green-400 text-3xl font-bold">&#8377;' + card.dataset.price + '</span>'
+            + '<span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);">' + card.dataset.promo + '</span>'
+            + '</div>';
+    } else {
+        priceHtml = '<p class="text-indigo-300 text-3xl font-bold">&#8377;' + card.dataset.price + '</p>';
+    }
+    document.getElementById('modalPriceBlock').innerHTML = priceHtml;
+
+    const stock = parseInt(card.dataset.stock);
+    const stockEl = document.getElementById('modalStock');
+    if (stock > 0) {
+        stockEl.className = 'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold stock-badge-in';
+        stockEl.innerHTML = '<i class="fa-solid fa-circle-check text-xs"></i> In Stock';
+    } else {
+        stockEl.className = 'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold stock-badge-out';
+        stockEl.innerHTML = '<i class="fa-solid fa-circle-xmark text-xs"></i> Out of Stock';
+    }
+
+    const cartDiv = document.getElementById('modalCartBtn');
+    if (stock <= 0) {
+        cartDiv.innerHTML = '<span style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:14px;font-weight:600;font-size:14px;background:rgba(99,102,241,0.1);color:#6b7280;border:1px solid rgba(99,102,241,0.15);cursor:not-allowed;opacity:0.5;"><i class="fa-solid fa-cart-shopping"></i> Out of Stock</span>';
+    } else {
+        const addBtn = card.querySelector('a[href*="add_to_cart"]');
+        if (addBtn) {
+            const clone = addBtn.cloneNode(true);
+            clone.className = 'inline-flex items-center gap-3 px-6 py-3 rounded-2xl font-semibold text-sm build-btn';
+            clone.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Add to Cart';
+            cartDiv.innerHTML = '';
+            cartDiv.appendChild(clone);
+        } else {
+            const qtyBar = card.querySelector('.flex.items-center.gap-3');
+            cartDiv.innerHTML = qtyBar ? qtyBar.outerHTML : '<span class="text-gray-400 text-sm">Already in cart</span>';
+        }
+    }
+
+    m.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('productModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
 </body>
 </html>

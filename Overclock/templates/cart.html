@@ -51,21 +51,12 @@ input, textarea, select { cursor:text; }
                 <button class="hover:text-white transition flex items-center gap-2 px-2 py-1">Products <i class="fa-solid fa-chevron-down text-xs"></i></button>
                 <div class="absolute top-full left-0 mt-3 w-64 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999] max-h-[420px] overflow-y-auto">
                     <a href="{% url 'all_products' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">All Products</a>
-                    <a href="{% url 'all_products' %}?category=Prebuilt+PCs" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Prebuilt PCs</a>
-                    <a href="{% url 'all_products' %}?category=Gaming+Laptops" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Gaming Laptops</a>
-                    <a href="{% url 'all_products' %}?category=Custom+Builds" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Custom Builds</a>
-                    <a href="{% url 'all_products' %}?category=GPUs" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">GPUs</a>
-                    <a href="{% url 'all_products' %}?category=CPUs" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">CPUs</a>
-                    <a href="{% url 'all_products' %}?category=RAM" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">RAM</a>
-                    <a href="{% url 'all_products' %}?category=SSDs" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">SSDs</a>
-                    <a href="{% url 'all_products' %}?category=Motherboards" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Motherboards</a>
-                    <a href="{% url 'all_products' %}?category=Cooling" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Cooling</a>
-                    <a href="{% url 'all_products' %}?category=Monitors" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Monitors</a>
-                    <a href="{% url 'all_products' %}?category=Keyboards" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Keyboards</a>
-                    <a href="{% url 'all_products' %}?category=Mouse" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Mouse</a>
-                    <a href="{% url 'all_products' %}?category=Headsets" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Headsets</a>
-                    <a href="{% url 'all_products' %}?category=Streaming+Gear" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Streaming Gear</a>
-                    <a href="{% url 'all_products' %}?category=Gaming+Chair" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Gaming Chair</a>
+                    {% for cat in nav_categories %}
+                    <a href="{% url 'all_products' %}?category={{ cat.name|urlencode }}"
+                       class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">
+                        {{ cat.name }}
+                    </a>
+                    {% endfor %}
                 </div>
             </div>
             <a href="{% url 'index' %}#about" class="hover:text-white transition">About</a>
@@ -80,8 +71,15 @@ input, textarea, select { cursor:text; }
             <div class="relative group z-50">
                 <button class="hover:text-white transition px-2 py-1"><i class="fa-regular fa-user text-lg"></i></button>
                 <div class="absolute right-0 top-full mt-3 w-48 bg-[#0b1120]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[999]">
-                    <a href="{% url 'profile' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Profile</a>
-                    <a href="{% url 'logout' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Logout</a>
+                    {% if request.session.email %}
+                        <a href="{% url 'profile' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Profile</a>
+                        <a href="{% url 'logout' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Logout</a>
+                        <a href="{% url 'order_history' %}">
+                            <i class="fa-solid fa-clock-rotate-left"></i> My Orders
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="block px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition">Login</a>
+                    {% endif %}
                 </div>
             </div>
         </nav>
@@ -135,7 +133,11 @@ input, textarea, select { cursor:text; }
                     <div class="text-right flex-shrink-0">
                         <p class="text-xs text-gray-500 mb-1 uppercase tracking-wider">Subtotal</p>
                         <p class="text-2xl font-semibold text-white mb-4">₹{{ item.total_price|floatformat:0 }}</p>
+                        {% if is_guest %}
+                        <form method="POST" action="{% url 'guest_remove_item' item.id %}">{% csrf_token %}
+                        {% else %}
                         <form method="POST" action="{% url 'delete_cart' item.id %}">{% csrf_token %}
+                        {% endif %}
                             <button type="submit" class="remove-btn"><i class="fa-solid fa-trash-can text-xs"></i> Remove</button>
                         </form>
                     </div>
@@ -185,6 +187,12 @@ input, textarea, select { cursor:text; }
                 <i class="fa-solid fa-triangle-exclamation mr-2"></i> checkout
             </div>
             {% else %}
+            {% if is_guest %}
+            <p class="text-center text-yellow-400 text-sm mb-3">
+                <i class="fa-solid fa-circle-info mr-1"></i>
+                You're checking out as a guest. <a href="{% url 'login' %}" class="underline hover:text-white">Login</a> to save your order history.
+            </p>
+            {% endif %}
             <a href="{% url 'checkout' %}" class="block checkout-btn uppercase tracking-widest text-center">Proceed to Checkout</a>
             {% endif %}
 

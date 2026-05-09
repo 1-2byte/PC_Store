@@ -30,7 +30,6 @@
 
 <style>
 
-
 .hero-section {
     min-height: 100vh;
     display: flex;
@@ -150,7 +149,7 @@
         </p>
 
         <!-- Explore Store Button -->
-        <a href="#top-products"
+        <a href="{% url 'all_products' %}"
            class="btn-shine inline-block bg-indigo-600 hover:bg-indigo-700 px-10 py-4 rounded-full font-semibold transition">
             Explore Store
         </a>
@@ -177,7 +176,7 @@
             <h3 class="text-2xl font-semibold mb-3">
                 Premium Builds
             </h3>
-
+            
             <p class="text-gray-300">
                 ASUS ROG, RTX 4090, Ryzen 9 flagship systems for elite performance.
             </p>
@@ -219,67 +218,179 @@
 <!-- TOP PRODUCTS -->
 <section id="top-products" class="max-w-7xl mx-auto px-6 py-20 fade-up">
 
-    <h2 class="text-4xl font-bold text-center mb-14">
-        Top Products
-    </h2>
+    <h2 class="text-4xl font-bold text-center mb-14">Top Products</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-
-        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition">
-            <img src="{% static 'products/rtx4080.jpg' %}"
-                 class="top-product-img mb-4">
-
-            <h3 class="text-lg font-semibold">
-                NVIDIA RTX 4080 GPU
-            </h3>
-
-            <p class="text-indigo-300 mt-2 font-medium">
-                ₹1,12,999
-            </p>
+    {% if top_products %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+        {% for product in top_products %}
+        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition cursor-pointer"
+             onclick="openProductModal(this)"
+             data-id="{{ product.id }}"
+             data-name="{{ product.name }}"
+             data-img="{% if product.image %}{{ product.image.url }}{% endif %}"
+             data-price="{% if product.has_promo %}{{ product.promo_price_formatted }}{% else %}{{ product.formatted_price }}{% endif %}"
+             data-orig="{% if product.has_promo %}{{ product.formatted_price }}{% endif %}"
+             data-promo="{% if product.has_promo %}{{ product.promo_label }}{% endif %}"
+             data-desc="{{ product.description }}"
+             data-stock="{{ product.quantity }}"
+             data-cat="{{ product.category }}"
+             data-addurl="{% url 'add_to_cart' product.id %}">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="top-product-img mb-4" alt="{{ product.name }}">
+            {% else %}
+            <div class="top-product-img mb-4 flex items-center justify-center text-gray-500">
+                <i class="fa-solid fa-image text-4xl"></i>
+            </div>
+            {% endif %}
+            <h3 class="text-lg font-semibold">{{ product.name }}</h3>
+            <p class="text-gray-400 text-xs mt-1">{{ product.category }}</p>
+            {% if product.has_promo %}
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
+                <p class="text-gray-500 text-sm line-through">₹{{ product.formatted_price }}</p>
+                <p class="text-green-400 font-semibold">₹{{ product.promo_price_formatted }}</p>
+                <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.15);color:#f87171;">{{ product.promo_label }}</span>
+            </div>
+            {% else %}
+            <p class="text-indigo-300 mt-2 font-medium">₹{{ product.formatted_price }}</p>
+            {% endif %}
         </div>
-
-        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition">
-            <img src="{% static 'products/Ryzen9-7950X.jpg' %}"
-                 class="top-product-img mb-4">
-
-            <h3 class="text-lg font-semibold">
-                AMD Ryzen 9 7950X
-            </h3>
-
-            <p class="text-indigo-300 mt-2 font-medium">
-                ₹58,999
-            </p>
-        </div>
-
-        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition">
-            <img src="{% static 'products/legion-monitor.png' %}"
-                 class="top-product-img mb-4">
-
-            <h3 class="text-lg font-semibold">
-                LEGION Gaming Monitor
-            </h3>
-
-            <p class="text-indigo-300 mt-2 font-medium">
-                ₹27,999
-            </p>
-        </div>
-
-        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition">
-            <img src="{% static 'products/gchair1.jpg' %}"
-                 class="top-product-img mb-4">
-
-            <h3 class="text-lg font-semibold">
-                Gaming Chair
-            </h3>
-
-            <p class="text-indigo-300 mt-2 font-medium">
-                ₹18,999
-            </p>
-        </div>
-
+        {% endfor %}
     </div>
+    {% endif %}
+
+    <!-- Second row: specific featured products -->
+    {% if featured_row %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-{{ featured_row|length }} gap-8">
+        {% for product in featured_row %}
+        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition cursor-pointer"
+             onclick="openProductModal(this)"
+             data-id="{{ product.id }}"
+             data-name="{{ product.name }}"
+             data-img="{% if product.image %}{{ product.image.url }}{% endif %}"
+             data-price="{% if product.has_promo %}{{ product.promo_price_formatted }}{% else %}{{ product.formatted_price }}{% endif %}"
+             data-orig="{% if product.has_promo %}{{ product.formatted_price }}{% endif %}"
+             data-promo="{% if product.has_promo %}{{ product.promo_label }}{% endif %}"
+             data-desc="{{ product.description }}"
+             data-stock="{{ product.quantity }}"
+             data-cat="{{ product.category }}"
+             data-addurl="{% url 'add_to_cart' product.id %}">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="top-product-img mb-4" alt="{{ product.name }}">
+            {% else %}
+            <div class="top-product-img mb-4 flex items-center justify-center text-gray-500">
+                <i class="fa-solid fa-image text-4xl"></i>
+            </div>
+            {% endif %}
+            <h3 class="text-lg font-semibold">{{ product.name }}</h3>
+            <p class="text-gray-400 text-xs mt-1">{{ product.category }}</p>
+            {% if product.has_promo %}
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
+                <p class="text-gray-500 text-sm line-through">₹{{ product.formatted_price }}</p>
+                <p class="text-green-400 font-semibold">₹{{ product.promo_price_formatted }}</p>
+                <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.15);color:#f87171;">{{ product.promo_label }}</span>
+            </div>
+            {% else %}
+            <p class="text-indigo-300 mt-2 font-medium">₹{{ product.formatted_price }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
 </section>
+
+
+<!-- PRODUCT MODAL (for index page) -->
+<div id="indexProductModal" style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity 0.3s,visibility 0.3s;"
+     onclick="if(event.target===this)closeProductModal()">
+    <div style="background:linear-gradient(135deg,rgba(15,18,40,0.98),rgba(20,24,50,0.98));border:1px solid rgba(99,102,241,0.2);border-radius:24px;padding:32px;max-width:760px;width:90%;max-height:85vh;overflow-y:auto;transform:translateY(20px) scale(0.97);transition:transform 0.3s;" id="indexModalBox">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+            <div>
+                <p id="iModalCat" style="font-size:11px;color:#a5b4fc;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;"></p>
+                <h2 id="iModalName" style="font-size:22px;font-weight:700;line-height:1.3;"></h2>
+            </div>
+            <button onclick="closeProductModal()" style="color:#6b7280;background:none;border:none;cursor:pointer;font-size:20px;margin-left:16px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+            <div>
+                <img id="iModalImg" src="" alt="" style="width:100%;height:260px;object-fit:contain;background:rgba(255,255,255,0.03);border-radius:16px;padding:12px;">
+            </div>
+            <div style="display:flex;flex-direction:column;justify-content:space-between;gap:16px;">
+                <div>
+                    <div id="iModalPriceBlock" style="margin-bottom:16px;"></div>
+                    <p id="iModalDesc" style="font-size:13px;color:#d1d5db;line-height:1.8;"></p>
+                </div>
+                <div>
+                    <div id="iModalStock" style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:12px;"></div>
+                    <div id="iModalCartBtn"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openProductModal(card) {
+    const modal = document.getElementById('indexProductModal');
+    const box   = document.getElementById('indexModalBox');
+
+    document.getElementById('iModalName').textContent = card.dataset.name;
+    document.getElementById('iModalCat').textContent  = card.dataset.cat;
+    document.getElementById('iModalImg').src          = card.dataset.img;
+    document.getElementById('iModalImg').alt          = card.dataset.name;
+    document.getElementById('iModalDesc').textContent = card.dataset.desc;
+
+    // Price block
+    let priceHtml = '';
+    if (card.dataset.promo) {
+        priceHtml = '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'
+            + '<span style="color:#6b7280;font-size:15px;text-decoration:line-through;">&#8377;' + card.dataset.orig + '</span>'
+            + '<span style="color:#4ade80;font-size:28px;font-weight:700;">&#8377;' + card.dataset.price + '</span>'
+            + '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);">' + card.dataset.promo + '</span>'
+            + '</div>';
+    } else {
+        priceHtml = '<p style="color:#a5b4fc;font-size:28px;font-weight:700;">&#8377;' + card.dataset.price + '</p>';
+    }
+    document.getElementById('iModalPriceBlock').innerHTML = priceHtml;
+
+    // Stock badge
+    const stock   = parseInt(card.dataset.stock);
+    const stockEl = document.getElementById('iModalStock');
+    if (stock > 0) {
+        stockEl.style.cssText = 'display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.3);';
+        stockEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> In Stock';
+    } else {
+        stockEl.style.cssText = 'display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.3);';
+        stockEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Out of Stock';
+    }
+
+    // Cart button
+    const cartDiv = document.getElementById('iModalCartBtn');
+    if (stock > 0) {
+        cartDiv.innerHTML = '<a href="' + card.dataset.addurl + '" style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:14px;font-weight:600;font-size:14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1"><i class=\"fa-solid fa-cart-shopping\"></i> Add to Cart</a>';
+    } else {
+        cartDiv.innerHTML = '<span style="color:#6b7280;font-size:13px;">Currently unavailable</span>';
+    }
+
+    modal.style.opacity    = '1';
+    modal.style.visibility = 'visible';
+    box.style.transform    = 'translateY(0) scale(1)';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeProductModal() {
+    const modal = document.getElementById('indexProductModal');
+    const box   = document.getElementById('indexModalBox');
+    modal.style.opacity    = '0';
+    modal.style.visibility = 'hidden';
+    box.style.transform    = 'translateY(20px) scale(0.97)';
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProductModal(); });
+</script>
 
 
 <!-- BUILD SECTION -->
@@ -306,113 +417,208 @@
 
 </section>
 
-
-<!-- ABOUT -->
-<section id="about" class="py-24 px-6 fade-up">
-
-    <div class="max-w-5xl mx-auto text-center">
-
-        <h2 class="text-4xl font-bold mb-8">
-            About Us
-        </h2>
-
-        <p class="text-gray-300 text-lg leading-8">
-            OVERCLOCK delivers premium gaming PCs, components,
-            and accessories built for enthusiasts, creators,
-            and competitive gamers.
-
-            From flagship RTX-powered rigs to clean minimal workstations,
-            we help gamers push performance beyond limits.
-        </p>
-
+<!-- STATS -->
+<section class="max-w-7xl mx-auto px-6 py-16 fade-up">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div class="glass rounded-3xl p-8">
+            <p class="text-5xl font-bold text-indigo-400">2,500+</p>
+            <p class="text-gray-300 mt-2 text-sm">Units Sold</p>
+        </div>
+        <div class="glass rounded-3xl p-8">
+            <p class="text-5xl font-bold text-indigo-400">1,800+</p>
+            <p class="text-gray-300 mt-2 text-sm">Happy Customers</p>
+        </div>
+        <div class="glass rounded-3xl p-8">
+            <p class="text-5xl font-bold text-indigo-400">4.9★</p>
+            <p class="text-gray-300 mt-2 text-sm">Average Rating</p>
+        </div>
+        <div class="glass rounded-3xl p-8">
+            <p class="text-5xl font-bold text-indigo-400">3 Yrs</p>
+            <p class="text-gray-300 mt-2 text-sm">In Business</p>
+        </div>
     </div>
-
 </section>
 
-<!-- OUR TEAM -->
-<section class="py-24 px-6 fade-up">
-
-    <div class="max-w-7xl mx-auto text-center">
-
-        <h2 class="text-4xl font-bold mb-8">
-            Our Team
-        </h2>
-
-        <p class="text-gray-300 text-lg mb-14 max-w-3xl mx-auto">
-            Behind OVERCLOCK is a passionate team of builders, gamers,
-            creators, and tech enthusiasts dedicated to delivering
-            elite gaming systems and premium customer experience.
+<!-- DEALS BANNER — only shown when promos are active -->
+{% if active_promos %}
+<section class="max-w-7xl mx-auto px-6 py-10 fade-up">
+    <div class="rounded-3xl p-8 text-center"
+         style="background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(168,85,247,0.25));border:1px solid rgba(99,102,241,0.3);">
+        <p class="text-sm text-indigo-300 uppercase tracking-widest mb-2">
+            <i class="fa-solid fa-tag mr-1"></i> Active Deals
         </p>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-            <!-- MEMBER 1 -->
-            <div class="glass rounded-3xl p-6 hover:-translate-y-2 transition duration-300">
-
-                <img src="{% static 'team/alex.jpg' %}"
-                     class="w-40 h-40 rounded-full mx-auto object-cover mb-6 border border-white/10">
-
-                <h3 class="text-2xl font-semibold mb-2">
-                    Alex Carter
-                </h3>
-
-                <p class="text-indigo-300 mb-3">
-                    Founder & System Architect
-                </p>
-
-                <p class="text-gray-300 text-sm leading-7">
-                    Specializing in premium gaming rigs,
-                    flagship builds, and performance optimization.
-                </p>
-
+        <h2 class="text-3xl font-bold mb-4">Limited Time Offers</h2>
+        <div class="flex flex-wrap justify-center gap-4">
+            {% for promo in active_promos %}
+            <div class="glass rounded-2xl px-6 py-3">
+                <p class="text-white text-sm">{{ promo.description }}</p>
+                <p class="text-indigo-300 font-bold tracking-widest mt-1">{{ promo.coupon_code }}</p>
             </div>
-
-            <!-- MEMBER 2 -->
-            <div class="glass rounded-3xl p-6 hover:-translate-y-2 transition duration-300">
-
-                <img src="{% static 'team/sophia.jpg' %}"
-                     class="w-40 h-40 rounded-full mx-auto object-cover mb-6 border border-white/10">
-
-                <h3 class="text-2xl font-semibold mb-2">
-                    Sophia Reynolds
-                </h3>
-
-                <p class="text-indigo-300 mb-3">
-                    Creative Director
-                </p>
-
-                <p class="text-gray-300 text-sm leading-7">
-                    Focused on premium visual identity,
-                    customer experience, and brand design.
-                </p>
-
-            </div>
-
-            <!-- MEMBER 3 -->
-            <div class="glass rounded-3xl p-6 hover:-translate-y-2 transition duration-300">
-
-                <img src="{% static 'team/daniel.jpg' %}"
-                     class="w-40 h-40 rounded-full mx-auto object-cover mb-6 border border-white/10">
-
-                <h3 class="text-2xl font-semibold mb-2">
-                    Daniel Brooks
-                </h3>
-
-                <p class="text-indigo-300 mb-3">
-                    Hardware Specialist
-                </p>
-
-                <p class="text-gray-300 text-sm leading-7">
-                    Expert in component selection,
-                    thermal performance, and custom PC builds.
-                </p>
-
-            </div>
-
+            {% endfor %}
         </div>
-
+        <a href="{% url 'all_products' %}" class="inline-block mt-6 bg-indigo-600 hover:bg-indigo-700 px-8 py-3 rounded-full text-sm font-semibold transition">
+            Shop Now
+        </a>
     </div>
+</section>
+{% endif %}
 
+<!-- RECENTLY ADDED -->
+<section class="max-w-7xl mx-auto px-6 py-20 fade-up">
+    <h2 class="text-4xl font-bold text-center mb-14">Recently Added</h2>
+    {% if recently_added %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {% for product in recently_added %}
+        <a href="{% url 'all_products' %}?search={{ product.name|urlencode }}"
+           class="glass rounded-3xl p-5 hover:-translate-y-2 transition block">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="top-product-img mb-4" alt="{{ product.name }}">
+            {% else %}
+            <div class="top-product-img mb-4 flex items-center justify-center text-gray-500">
+                <i class="fa-solid fa-image text-4xl"></i>
+            </div>
+            {% endif %}
+            <span class="inline-block text-xs px-2 py-1 rounded-full mb-2" style="background:rgba(99,102,241,0.15);color:#a5b4fc;">New</span>
+            <h3 class="text-lg font-semibold">{{ product.name }}</h3>
+            <p class="text-gray-400 text-xs mt-1">{{ product.category }}</p>
+            <p class="text-indigo-300 mt-2 font-medium">₹{{ product.price }}</p>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+
+<!-- WHY CHOOSE US -->
+<section class="max-w-7xl mx-auto px-6 py-20 fade-up">
+    <h2 class="text-4xl font-bold text-center mb-14">Why Choose OVERCLOCK</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="glass rounded-3xl p-8 text-center">
+            <i class="fa-solid fa-bolt text-4xl text-indigo-400 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-3">Flagship Performance</h3>
+            <p class="text-gray-300 text-sm leading-7">Every system is handpicked and tested for peak gaming and productivity performance.</p>
+        </div>
+        <div class="glass rounded-3xl p-8 text-center">
+            <i class="fa-solid fa-shield-halved text-4xl text-indigo-400 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-3">Warranty Assured</h3>
+            <p class="text-gray-300 text-sm leading-7">All products come with manufacturer warranty and our in-house support guarantee.</p>
+        </div>
+        <div class="glass rounded-3xl p-8 text-center">
+            <i class="fa-solid fa-truck-fast text-4xl text-indigo-400 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-3">Free Delivery</h3>
+            <p class="text-gray-300 text-sm leading-7">Free delivery across Kerala on orders above ₹10,000. Fast, safe, insured shipping.</p>
+        </div>
+        <div class="glass rounded-3xl p-8 text-center">
+            <i class="fa-solid fa-headset text-4xl text-indigo-400 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-3">Expert Support</h3>
+            <p class="text-gray-300 text-sm leading-7">Our team of hardware enthusiasts is available to help you choose the right build.</p>
+        </div>
+        <div class="glass rounded-3xl p-8 text-center">
+            <i class="fa-solid fa-tag text-4xl text-indigo-400 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-3">Best Prices</h3>
+            <p class="text-gray-300 text-sm leading-7">Competitive pricing with regular deals, promo codes, and seasonal offers.</p>
+        </div>
+        <div class="glass rounded-3xl p-8 text-center">
+            <i class="fa-solid fa-screwdriver-wrench text-4xl text-indigo-400 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-3">Custom Builds</h3>
+            <p class="text-gray-300 text-sm leading-7">Use our PC Builder to create your dream system — component by component.</p>
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="max-w-7xl mx-auto px-6 py-20 fade-up">
+    <h2 class="text-4xl font-bold text-center mb-14">What Gamers Say</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="glass rounded-3xl p-8">
+            <p class="text-yellow-400 mb-3">★★★★★</p>
+            <p class="text-gray-300 text-sm leading-7 mb-4">"Ordered a prebuilt RTX 4080 rig and it arrived perfectly packed. Insane performance out of the box. Best PC store in Kerala!"</p>
+            <p class="font-semibold">Arjun Menon</p>
+            <p class="text-gray-500 text-xs">Kochi, Kerala</p>
+        </div>
+        <div class="glass rounded-3xl p-8">
+            <p class="text-yellow-400 mb-3">★★★★★</p>
+            <p class="text-gray-300 text-sm leading-7 mb-4">"Got my custom build done through the Build PC feature. The team guided me perfectly. Delivery was super fast!"</p>
+            <p class="font-semibold">Sreeram Nair</p>
+            <p class="text-gray-500 text-xs">Calicut, Kerala</p>
+        </div>
+        <div class="glass rounded-3xl p-8">
+            <p class="text-yellow-400 mb-3">★★★★★</p>
+            <p class="text-gray-300 text-sm leading-7 mb-4">"Amazing quality products and great customer support. The promo deals are legit — saved a ton on my monitor!"</p>
+            <p class="font-semibold">Devika Pillai</p>
+            <p class="text-gray-500 text-xs">Trivandrum, Kerala</p>
+        </div>
+    </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="max-w-4xl mx-auto px-6 py-16 fade-up">
+    <div class="glass rounded-3xl p-10 text-center">
+        <h2 class="text-3xl font-bold mb-3">Stay in the Loop</h2>
+        <p class="text-gray-300 mb-6 text-sm">Get notified about new arrivals, exclusive deals, and gaming news.</p>
+        <form class="flex flex-col sm:flex-row gap-3 justify-center" onsubmit="handleNewsletter(event)">
+            <input type="email" placeholder="Your email address"
+                   class="flex-1 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 max-w-sm">
+            <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 px-8 py-3 rounded-2xl font-semibold transition">
+                Subscribe
+            </button>
+        </form>
+        <p id="newsletter-msg" class="mt-3 text-indigo-300 text-sm hidden">🎉 You're subscribed!</p>
+    </div>
+</section>
+<script>
+function handleNewsletter(e) {
+    e.preventDefault();
+    document.getElementById('newsletter-msg').classList.remove('hidden');
+    e.target.reset();
+}
+</script>
+
+<!-- QUICK LINKS / NAVIGATION -->
+<section class="max-w-7xl mx-auto px-6 py-16 fade-up">
+    <h2 class="text-4xl font-bold text-center mb-14">Explore OVERCLOCK</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <a href="{% url 'all_products' %}" class="glass rounded-3xl p-6 text-center hover:-translate-y-2 transition">
+            <i class="fa-solid fa-store text-3xl text-indigo-400 mb-3"></i>
+            <p class="font-semibold">All Products</p>
+            <p class="text-gray-400 text-xs mt-1">Browse full catalog</p>
+        </a>
+        <a href="{% url 'build_pc' %}" class="glass rounded-3xl p-6 text-center hover:-translate-y-2 transition">
+            <i class="fa-solid fa-screwdriver-wrench text-3xl text-indigo-400 mb-3"></i>
+            <p class="font-semibold">Build a PC</p>
+            <p class="text-gray-400 text-xs mt-1">Custom configurator</p>
+        </a>
+        <a href="{% url 'about' %}" class="glass rounded-3xl p-6 text-center hover:-translate-y-2 transition">
+            <i class="fa-solid fa-circle-info text-3xl text-indigo-400 mb-3"></i>
+            <p class="font-semibold">About Us</p>
+            <p class="text-gray-400 text-xs mt-1">Our story & team</p>
+        </a>
+        <a href="{% url 'contact' %}" class="glass rounded-3xl p-6 text-center hover:-translate-y-2 transition">
+            <i class="fa-solid fa-envelope text-3xl text-indigo-400 mb-3"></i>
+            <p class="font-semibold">Contact</p>
+            <p class="text-gray-400 text-xs mt-1">Get in touch</p>
+        </a>
+        <a href="{% url 'feedback' %}" class="glass rounded-3xl p-6 text-center hover:-translate-y-2 transition">
+            <i class="fa-solid fa-star text-3xl text-indigo-400 mb-3"></i>
+            <p class="font-semibold">Feedback</p>
+            <p class="text-gray-400 text-xs mt-1">Share your experience</p>
+        </a>
+        <a href="{% url 'order_history' %}" class="glass rounded-3xl p-6 text-center hover:-translate-y-2 transition">
+            <i class="fa-solid fa-clock-rotate-left text-3xl text-indigo-400 mb-3"></i>
+            <p class="font-semibold">Order History</p>
+            <p class="text-gray-400 text-xs mt-1">Track your orders</p>
+        </a>
+        <a href="{% url 'cart' %}" class="glass rounded-3xl p-6 text-center hover:-translate-y-2 transition">
+            <i class="fa-solid fa-cart-shopping text-3xl text-indigo-400 mb-3"></i>
+            <p class="font-semibold">My Cart</p>
+            <p class="text-gray-400 text-xs mt-1">View cart & checkout</p>
+        </a>
+        <a href="{% url 'profile' %}" class="glass rounded-3xl p-6 text-center hover:-translate-y-2 transition">
+            <i class="fa-solid fa-user text-3xl text-indigo-400 mb-3"></i>
+            <p class="font-semibold">My Profile</p>
+            <p class="text-gray-400 text-xs mt-1">Account & settings</p>
+        </a>
+    </div>
 </section>
 
 {% endblock %}

@@ -4,176 +4,452 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OVERCLOCK Profile</title>
-
+<title>OVERCLOCK | Profile</title>
 <script src="https://cdn.tailwindcss.com"></script>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-
-/* BACKGROUND */
+* { margin:0; padding:0; box-sizing:border-box; cursor:default; }
 body {
-    background: radial-gradient(circle at 20% 20%, #1e293b, #020617 70%);
+    font-family: Inter, sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(99,102,241,.12), transparent 40%),
+        radial-gradient(circle at bottom right, rgba(168,85,247,.06), transparent 40%),
+        #050816;
+    color: white; overflow-x: hidden; min-height: 100vh;
 }
-
-/* Glow */
-body::before {
-    content: "";
-    position: fixed;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(99,102,241,0.15), transparent);
-    filter: blur(120px);
-    top: -100px;
-    left: -100px;
-}
-
-/* GLASS */
-.glass {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.08);
-}
-
-/* ANIMATION */
-.fade {
-    opacity: 0;
-    transform: translateY(30px);
-    animation: fadeUp 0.8s ease forwards;
-}
-
-.fade:nth-child(1){animation-delay:0.2s;}
-.fade:nth-child(2){animation-delay:0.4s;}
-.fade:nth-child(3){animation-delay:0.6s;}
-
-@keyframes fadeUp {
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* INPUT */
-.input {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: white;
-}
-
-/* BUTTON */
-.btn {
-    position: relative;
-    overflow: hidden;
-}
-.btn::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
-    transform: translateX(-100%);
-    transition: 0.5s;
-}
-.btn:hover::before {
-    transform: translateX(100%);
-}
-
+a, button { cursor: pointer; text-decoration: none; }
+input, textarea, select { cursor: text; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #050816; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 20px; }
+.glass { background: rgba(255,255,255,0.035); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.07); }
+.nav-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:14px; font-size:14px; color:rgba(255,255,255,0.55); transition:all 0.2s ease; border:1px solid transparent; }
+.nav-item:hover { background:rgba(255,255,255,0.05); color:white; border-color:rgba(255,255,255,0.06); }
+.nav-item.active { background:rgba(99,102,241,0.15); color:white; border-color:rgba(99,102,241,0.3); }
+.nav-item.active i { color:#818cf8; }
+.nav-item i { width:18px; text-align:center; font-size:15px; }
+.panel { display:none; }
+.panel.active { display:block; }
+.field { width:100%; padding:11px 16px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); color:white; font-size:14px; outline:none; transition:border-color 0.2s ease; }
+.field:focus { border-color:rgba(99,102,241,0.5); }
+.field::placeholder { color:rgba(255,255,255,0.25); }
+label { display:block; font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:6px; letter-spacing:0.05em; text-transform:uppercase; }
+.btn-primary { background:linear-gradient(135deg,#6366f1,#818cf8); padding:10px 22px; border-radius:12px; font-size:14px; font-weight:600; transition:0.25s ease; border:none; color:white; }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(99,102,241,0.35); }
+.btn-ghost { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.09); color:rgba(255,255,255,0.6); padding:10px 22px; border-radius:12px; font-size:14px; transition:0.2s ease; }
+.btn-ghost:hover { background:rgba(255,255,255,0.1); color:white; }
+.avatar-ring { width:100px; height:100px; border-radius:50%; border:2px solid rgba(99,102,241,0.5); box-shadow:0 0 0 4px rgba(99,102,241,0.1),0 8px 24px rgba(0,0,0,0.4); object-fit:cover; }
+.avatar-placeholder { width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg,rgba(99,102,241,0.3),rgba(168,85,247,0.2)); border:2px solid rgba(99,102,241,0.4); display:flex; align-items:center; justify-content:center; font-size:38px; font-weight:700; color:rgba(255,255,255,0.7); box-shadow:0 0 0 4px rgba(99,102,241,0.1); }
+.info-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+.info-row:last-child { border-bottom:none; }
+.info-label { font-size:12px; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:0.06em; }
+.info-value { font-size:14px; color:rgba(255,255,255,0.85); text-align:right; }
+.badge-Pending    { background:rgba(234,179,8,0.12);  border:1px solid rgba(234,179,8,0.3);  color:#fde047; }
+.badge-Processing { background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); color:#93c5fd; }
+.badge-Shipped    { background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); color:#d8b4fe; }
+.badge-Delivered  { background:rgba(34,197,94,0.12);  border:1px solid rgba(34,197,94,0.3);  color:#86efac; }
+.alert-success { background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.25); color:#86efac; padding:12px 16px; border-radius:12px; font-size:13px; }
+.alert-error   { background:rgba(239,68,68,0.1);  border:1px solid rgba(239,68,68,0.25);  color:#fca5a5; padding:12px 16px; border-radius:12px; font-size:13px; }
+.avatar-upload-zone { position:relative; display:inline-block; }
+.avatar-upload-overlay { position:absolute; inset:0; border-radius:50%; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; opacity:0; transition:0.2s ease; font-size:18px; color:white; }
+.avatar-upload-zone:hover .avatar-upload-overlay { opacity:1; }
+.fade-in { animation: fadeIn 0.35s ease forwards; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.strength-bar { height:3px; border-radius:2px; transition:background 0.3s ease; }
 </style>
 </head>
+<body>
 
-<body class="text-white font-sans">
-
-<!-- HEADER -->
-<header class="fixed w-full z-50 glass">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-        <h1 class="text-lg font-bold tracking-widest">O V E R C L O C K</h1>
-
-        <a href="{% url 'logout' %}" 
-           class="text-red-400 text-sm hover:text-red-500 transition">
-           Logout
+<header class="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-black/20">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="{% url 'index' %}" class="text-lg font-semibold tracking-[0.4em]">OVERCLOCK</a>
+        <nav class="hidden md:flex items-center gap-6 text-sm text-gray-400">
+            <a href="{% url 'index' %}" class="hover:text-white transition">Home</a>
+            <a href="{% url 'all_products' %}" class="hover:text-white transition">Products</a>
+            <a href="{% url 'cart' %}" class="hover:text-white transition"><i class="fa-solid fa-cart-shopping"></i></a>
+        </nav>
+        <a href="{% url 'logout' %}" class="text-sm text-red-400 hover:text-red-300 transition flex items-center gap-2">
+            <i class="fa-solid fa-right-from-bracket text-xs"></i> Logout
         </a>
     </div>
 </header>
 
-<!-- CONTENT -->
-<div class="max-w-4xl mx-auto pt-32 px-6">
+{% if messages %}
+<div class="max-w-7xl mx-auto px-6 pt-4 space-y-2">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %} flex items-center gap-3">
+        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
-    <!-- PROFILE CARD -->
-    <div class="glass rounded-2xl p-8 fade">
+<div class="max-w-7xl mx-auto px-4 md:px-6 py-8">
+    <div class="flex gap-6 lg:gap-8 items-start">
 
-        <h2 class="text-2xl font-semibold mb-6">Profile</h2>
-
-        <div class="space-y-4">
-
-            <div class="flex justify-between border-b border-white/10 pb-2">
-                <span class="text-gray-400">Name</span>
-                <span>{{ user.name }}</span>
+        <!-- SIDEBAR -->
+        <aside class="hidden md:flex flex-col w-64 shrink-0 sticky top-24">
+            <div class="glass rounded-2xl p-6 mb-4 text-center">
+                <div class="flex justify-center mb-4">
+                    <div class="avatar-upload-zone">
+                        {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="Avatar" class="avatar-ring">
+                        {% else %}
+                        <div class="avatar-placeholder">{{ user.name|first|upper }}</div>
+                        {% endif %}
+                        <label for="avatarInput" class="avatar-upload-overlay" title="Change photo">
+                            <i class="fa-solid fa-camera"></i>
+                        </label>
+                    </div>
+                </div>
+                <p class="font-semibold text-base">{{ user.name }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ user.email }}</p>
+                <form method="POST" action="{% url 'upload_avatar' %}" enctype="multipart/form-data" id="avatarForm">
+                    {% csrf_token %}
+                    <input type="file" id="avatarInput" name="avatar" accept="image/*" class="hidden">
+                </form>
             </div>
 
-            <div class="flex justify-between border-b border-white/10 pb-2">
-                <span class="text-gray-400">Email</span>
-                <span>{{ user.email }}</span>
+            <div class="glass rounded-2xl p-3 space-y-1">
+                <button onclick="switchPanel('overview')" class="nav-item active w-full text-left" id="nav-overview">
+                    <i class="fa-solid fa-gauge-high"></i> Overview
+                </button>
+                <button onclick="switchPanel('edit')" class="nav-item w-full text-left" id="nav-edit">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+                </button>
+                <button onclick="switchPanel('orders')" class="nav-item w-full text-left" id="nav-orders">
+                    <i class="fa-solid fa-box"></i> My Orders
+                </button>
+                <button onclick="switchPanel('security')" class="nav-item w-full text-left" id="nav-security">
+                    <i class="fa-solid fa-shield-halved"></i> Security
+                </button>
+                <div class="pt-2 border-t border-white/5 mt-2">
+                    <a href="{% url 'logout' %}" class="nav-item w-full text-left" style="color:rgba(252,165,165,0.7);">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MOBILE TAB NAV -->
+        <div class="md:hidden w-full mb-4">
+            <div class="glass rounded-2xl p-1.5 flex gap-1">
+                <button onclick="switchPanel('overview')" class="nav-item active flex-1 justify-center py-3 text-xs" id="nav-overview-m"><i class="fa-solid fa-gauge-high"></i></button>
+                <button onclick="switchPanel('edit')"     class="nav-item flex-1 justify-center py-3 text-xs" id="nav-edit-m"><i class="fa-solid fa-pen-to-square"></i></button>
+                <button onclick="switchPanel('orders')"   class="nav-item flex-1 justify-center py-3 text-xs" id="nav-orders-m"><i class="fa-solid fa-box"></i></button>
+                <button onclick="switchPanel('security')" class="nav-item flex-1 justify-center py-3 text-xs" id="nav-security-m"><i class="fa-solid fa-shield-halved"></i></button>
+            </div>
+        </div>
+
+        <!-- CONTENT PANELS -->
+        <div class="flex-1 min-w-0 space-y-4">
+
+            <!-- OVERVIEW -->
+            <div id="panel-overview" class="panel active fade-in">
+                <div class="glass rounded-2xl p-6 md:p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold">Account Overview</h2>
+                        <span class="text-xs px-3 py-1 rounded-full" style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc;">Active</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="glass rounded-xl p-4">
+                            <p class="text-xs text-gray-400 mb-1">Total Orders</p>
+                            <p class="text-2xl font-bold text-indigo-300">{{ orders.count }}</p>
+                        </div>
+                        <div class="glass rounded-xl p-4">
+                            <p class="text-xs text-gray-400 mb-1">Account</p>
+                            <p class="text-sm font-semibold text-white">Customer</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-row"><span class="info-label">Full Name</span><span class="info-value">{{ user.name }}</span></div>
+                        <div class="info-row"><span class="info-label">Email</span><span class="info-value text-indigo-300">{{ user.email }}</span></div>
+                        <div class="info-row"><span class="info-label">Phone</span><span class="info-value">{{ user.phone }}</span></div>
+                        <div class="info-row"><span class="info-label">Address</span><span class="info-value" style="max-width:55%;">{{ user.address }}</span></div>
+                    </div>
+                    <div class="pt-6 flex gap-3 flex-wrap">
+                        <button onclick="switchPanel('edit')" class="btn-primary text-sm"><i class="fa-solid fa-pen text-xs mr-2"></i>Edit Profile</button>
+                        <button onclick="switchPanel('orders')" class="btn-ghost text-sm"><i class="fa-solid fa-box text-xs mr-2"></i>View Orders</button>
+                    </div>
+                </div>
+                {% if orders %}
+                <div class="glass rounded-2xl p-6 mt-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-sm text-gray-300">Recent Orders</h3>
+                        <button onclick="switchPanel('orders')" class="text-xs text-indigo-400 hover:text-indigo-300 transition">View all →</button>
+                    </div>
+                    <div class="space-y-3">
+                        {% for order in orders|slice:":3" %}
+                        <div class="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                            <div>
+                                <p class="text-sm font-medium">{{ order.order_id }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ order.created_at|date:"d M Y" }}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <p class="text-sm font-semibold text-indigo-300">₹{{ order.grand_total }}</p>
+                                <span class="text-xs px-2 py-1 rounded-full font-medium badge-{{ order.status }}">{{ order.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
-            <div class="flex justify-between border-b border-white/10 pb-2">
-                <span class="text-gray-400">Phone</span>
-                <span>{{ user.phone }}</span>
+            <!-- EDIT PROFILE -->
+            <div id="panel-edit" class="panel fade-in">
+                <div class="glass rounded-2xl p-6 md:p-8">
+                    <h2 class="text-xl font-semibold mb-6">Edit Profile</h2>
+                    <div class="flex items-center gap-4 mb-8 p-4 rounded-xl" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+                        {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="Avatar" class="w-14 h-14 rounded-full object-cover border border-indigo-500/40">
+                        {% else %}
+                        <div class="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.35);">{{ user.name|first|upper }}</div>
+                        {% endif %}
+                        <div>
+                            <p class="text-sm font-medium mb-1">Profile Picture</p>
+                            <p class="text-xs text-gray-400 mb-1">Hover your avatar in the sidebar to upload a new photo</p>
+                            <p class="text-xs text-gray-500">JPG, PNG or WEBP · Max 5MB</p>
+                        </div>
+                    </div>
+                    <form method="POST" action="{% url 'editprofile' %}" class="space-y-5">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label>Full Name</label>
+                                <input type="text" name="name" value="{{ user.name }}" class="field" placeholder="Your full name" required>
+                            </div>
+                            <div>
+                                <label>Phone Number</label>
+                                <input type="text" name="phone" value="{{ user.phone }}" class="field" placeholder="+91 XXXXX XXXXX" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label>Delivery Address</label>
+                            <input type="text" name="location" value="{{ user.address }}" class="field" placeholder="Street, City, State">
+                        </div>
+                        <div class="pt-2 flex gap-3 flex-wrap">
+                            <button type="submit" class="btn-primary"><i class="fa-solid fa-check text-xs mr-2"></i>Save Changes</button>
+                            <button type="button" onclick="switchPanel('overview')" class="btn-ghost">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
-            <div class="flex justify-between border-b border-white/10 pb-2">
-                <span class="text-gray-400">Address</span>
-                <span class="text-right max-w-[60%]">{{ user.address }}</span>
+            <!-- ORDERS -->
+            <div id="panel-orders" class="panel fade-in">
+                <div class="glass rounded-2xl p-6 md:p-8">
+                    <h2 class="text-xl font-semibold mb-6">My Orders</h2>
+                    {% if orders %}
+                    <div class="space-y-3">
+                        {% for order in orders %}
+                        <div class="rounded-xl overflow-hidden" style="border:1px solid rgba(255,255,255,0.07);">
+                            <div class="flex items-center justify-between p-4 select-none"
+                                 style="background:rgba(255,255,255,0.03); cursor:pointer;"
+                                 onclick="toggleOrder('od-{{ order.order_id }}', this)">
+                                <div>
+                                    <p class="text-sm font-semibold">{{ order.order_id }}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">{{ order.created_at|date:"d M Y" }}</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <p class="text-sm font-semibold text-indigo-300">₹{{ order.grand_total }}</p>
+                                    <span class="text-xs px-2 py-1 rounded-full font-medium badge-{{ order.status }}">{{ order.status }}</span>
+                                    <i class="fa-solid fa-chevron-down text-xs text-gray-500 chevron-icon" style="transition:transform 0.25s ease;"></i>
+                                </div>
+                            </div>
+                            <div id="od-{{ order.order_id }}" class="hidden p-4 border-t border-white/5">
+                                <div class="space-y-3 mb-4">
+                                    {% for item in order.items.all %}
+                                    <div class="flex items-center gap-3">
+                                        {% if item.product_image %}
+                                        <img src="{{ item.product_image }}" class="w-12 h-12 rounded-lg object-contain bg-white/5 p-1" alt="">
+                                        {% else %}
+                                        <div class="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center"><i class="fa-solid fa-box text-gray-600"></i></div>
+                                        {% endif %}
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium truncate">{{ item.product_name }}</p>
+                                            <p class="text-xs text-gray-400 mt-0.5">Qty: {{ item.quantity }} · ₹{{ item.price }}</p>
+                                        </div>
+                                        <p class="text-sm font-semibold text-indigo-300">₹{{ item.total }}</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="flex flex-wrap justify-between gap-2 pt-3 border-t border-white/5 text-xs text-gray-400">
+                                    <div class="space-y-1">
+                                        <p>Payment: <span class="text-white">{{ order.payment_method }}</span></p>
+                                        {% if order.delivery_fee > 0 %}<p>Delivery: <span class="text-white">₹{{ order.delivery_fee }}</span></p>{% else %}<p>Delivery: <span class="text-green-400">Free</span></p>{% endif %}
+                                        {% if order.discount_amount > 0 %}<p>Discount: <span class="text-green-400">-₹{{ order.discount_amount }}</span></p>{% endif %}
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-base font-bold text-white">Total: ₹{{ order.grand_total }}</p>
+                                        {% if order.license_key %}<p class="mt-1 text-green-400 font-mono text-xs">🔑 {{ order.license_key }}</p>{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-16 text-gray-500">
+                        <i class="fa-solid fa-box-open text-5xl mb-4 block opacity-20"></i>
+                        <p class="text-base mb-2">No orders yet</p>
+                        <p class="text-sm text-gray-600 mb-6">Your purchase history will appear here</p>
+                        <a href="{% url 'all_products' %}" class="btn-primary text-sm inline-block"><i class="fa-solid fa-arrow-right text-xs mr-2"></i>Shop Now</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- SECURITY -->
+            <div id="panel-security" class="panel fade-in">
+                <div class="glass rounded-2xl p-6 md:p-8">
+                    <h2 class="text-xl font-semibold mb-2">Security Settings</h2>
+                    <p class="text-sm text-gray-400 mb-8">Change your password to keep your account safe.</p>
+
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.25);">
+                            <i class="fa-solid fa-lock text-indigo-400 text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold">Change Password</p>
+                            <p class="text-xs text-gray-400">Use a strong password you haven't used before</p>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{% url 'change_password' %}" class="space-y-4 max-w-md">
+                        {% csrf_token %}
+                        <div>
+                            <label>Current Password</label>
+                            <div class="relative">
+                                <input type="password" name="current_password" class="field pr-10" placeholder="Enter current password" required id="currentPw">
+                                <button type="button" onclick="togglePw('currentPw', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition">
+                                    <i class="fa-solid fa-eye text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label>New Password</label>
+                            <div class="relative">
+                                <input type="password" name="new_password" class="field pr-10" placeholder="Minimum 6 characters" required id="newPw" oninput="checkStrength(this.value)">
+                                <button type="button" onclick="togglePw('newPw', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition">
+                                    <i class="fa-solid fa-eye text-sm"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2 flex gap-1">
+                                <div class="strength-bar flex-1 bg-white/10" id="s1"></div>
+                                <div class="strength-bar flex-1 bg-white/10" id="s2"></div>
+                                <div class="strength-bar flex-1 bg-white/10" id="s3"></div>
+                                <div class="strength-bar flex-1 bg-white/10" id="s4"></div>
+                            </div>
+                            <p class="text-xs mt-1 text-gray-500" id="strengthLabel"></p>
+                        </div>
+                        <div>
+                            <label>Confirm New Password</label>
+                            <div class="relative">
+                                <input type="password" name="confirm_password" class="field pr-10" placeholder="Repeat new password" required id="confirmPw">
+                                <button type="button" onclick="togglePw('confirmPw', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition">
+                                    <i class="fa-solid fa-eye text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="pt-1">
+                            <button type="submit" class="btn-primary"><i class="fa-solid fa-key text-xs mr-2"></i>Update Password</button>
+                        </div>
+                    </form>
+
+                    <div class="mt-8 pt-6 border-t border-white/5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.2);">
+                                <i class="fa-solid fa-circle-check text-green-400 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold">Account Status</p>
+                                <p class="text-xs text-green-400">Active and in good standing</p>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 space-y-1 pl-12">
+                            <p><i class="fa-solid fa-envelope mr-2 text-gray-600"></i>{{ user.email }}</p>
+                            <p><i class="fa-solid fa-phone mr-2 text-gray-600"></i>{{ user.phone }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
-
-        <!-- BUTTON -->
-        <div class="mt-8">
-            <button onclick="toggleEditBox()" 
-                class="btn bg-indigo-500 px-6 py-2 rounded-full text-sm hover:bg-indigo-600 transition">
-                Edit Profile
-            </button>
-        </div>
-
     </div>
-
-    <!-- EDIT BOX -->
-    <div id="editBox" 
-         class="hidden mt-6 glass rounded-2xl p-8 fade">
-
-        <h3 class="text-xl mb-6">Edit Profile</h3>
-
-        <form method="POST" action="{% url 'editprofile' %}" class="space-y-4">
-            {% csrf_token %}
-
-            <input type="text" name="name" value="{{ user.name }}"
-                class="input w-full px-4 py-2 rounded" placeholder="Name">
-
-            <input type="text" name="phone" value="{{ user.phone }}"
-                class="input w-full px-4 py-2 rounded" placeholder="Phone">
-
-            <input type="text" name="location" value="{{ user.address }}"
-                class="input w-full px-4 py-2 rounded" placeholder="Address">
-
-            <div class="flex gap-3 mt-4">
-                <button type="submit"
-                    class="bg-green-500 px-5 py-2 rounded-full text-sm hover:bg-green-600 transition">
-                    Save
-                </button>
-
-                <button type="button" onclick="toggleEditBox()"
-                    class="bg-white/10 px-5 py-2 rounded-full text-sm hover:bg-white/20 transition">
-                    Cancel
-                </button>
-            </div>
-        </form>
-
-    </div>
-
 </div>
 
-<!-- SCRIPT -->
-<script>
-function toggleEditBox() {
-    const box = document.getElementById('editBox');
-    box.classList.toggle('hidden');
-}
-</script>
+<footer class="text-center py-8 text-gray-600 text-xs mt-4">
+    © 2025 OVERCLOCK — Built for Performance
+</footer>
 
+<script>
+const panels = ['overview','edit','orders','security'];
+
+function switchPanel(name) {
+    panels.forEach(p => {
+        const el  = document.getElementById('panel-' + p);
+        const nd  = document.getElementById('nav-' + p);
+        const nm  = document.getElementById('nav-' + p + '-m');
+        if (el) el.classList.remove('active');
+        if (nd) nd.classList.remove('active');
+        if (nm) nm.classList.remove('active');
+    });
+    const target = document.getElementById('panel-' + name);
+    const nd = document.getElementById('nav-' + name);
+    const nm = document.getElementById('nav-' + name + '-m');
+    if (target) { target.classList.add('active'); target.style.animation='none'; target.offsetHeight; target.style.animation=''; }
+    if (nd) nd.classList.add('active');
+    if (nm) nm.classList.add('active');
+}
+
+// Auto-submit avatar on file pick
+const avatarInput = document.getElementById('avatarInput');
+if (avatarInput) {
+    avatarInput.addEventListener('change', function() {
+        if (this.files.length) document.getElementById('avatarForm').submit();
+    });
+}
+
+// Toggle password visibility
+function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    const icon  = btn.querySelector('i');
+    if (input.type === 'password') { input.type = 'text'; icon.classList.replace('fa-eye','fa-eye-slash'); }
+    else { input.type = 'password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
+}
+
+// Password strength meter
+function checkStrength(val) {
+    const bars  = ['s1','s2','s3','s4'].map(id => document.getElementById(id));
+    const label = document.getElementById('strengthLabel');
+    let score = 0;
+    if (val.length >= 6)  score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+    if (/[^a-zA-Z0-9]/.test(val)) score++;
+    const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+    const labels = ['Weak','Fair','Good','Strong'];
+    bars.forEach((b,i) => { b.style.background = i < score ? colors[score-1] : 'rgba(255,255,255,0.1)'; });
+    label.textContent  = val.length ? (labels[score-1] || '') : '';
+    label.style.color  = score ? colors[score-1] : '';
+}
+
+// Order collapse
+function toggleOrder(id, header) {
+    const body    = document.getElementById(id);
+    const chevron = header.querySelector('.chevron-icon');
+    body.classList.toggle('hidden');
+    chevron.style.transform = body.classList.contains('hidden') ? '' : 'rotate(180deg)';
+}
+
+// Auto-switch to security panel when password message fires
+{% if messages %}
+{% for message in messages %}
+{% if 'assword' in message.message %}switchPanel('security');{% endif %}
+{% endfor %}
+{% endif %}
+</script>
 </body>
 </html>

@@ -8,7 +8,46 @@ from django.contrib.auth.hashers import make_password, check_password
 
 def index(request):
     active_promos = [p for p in Promotion.objects.filter(is_active=True) if p.is_valid_now]
-    return render(request, 'index.html', {'active_promos': active_promos})
+    top_products = Product.objects.filter(quantity__gt=0).order_by('-id')[:4]
+
+    # Second row: specific featured products by name (partial match, case-insensitive)
+    featured_names = ['Vision 4090 Monster', 'NZXT H7 Elite', 'legion monitor', 'AMD Ryzen 9 7950X']
+    featured_row = []
+    for name in featured_names:
+        p = Product.objects.filter(name__icontains=name).first()
+        if p:
+            featured_row.append(p)
+
+    recently_added = Product.objects.filter(quantity__gt=0).order_by('-id')[:4]
+
+    # Apply promo pricing to top_products and featured_row for display
+    active_promos_list = [p for p in Promotion.objects.filter(is_active=True) if p.is_valid_now]
+    category_promo_map = {}
+    for promo in active_promos_list:
+        if promo.promo_type == 'PERCENTAGE' and promo.applies_to_category:
+            category_promo_map[promo.applies_to_category] = promo
+
+    for product in list(top_products) + featured_row + list(recently_added):
+        try:
+            product.formatted_price = "{:,.0f}".format(float(product.price))
+        except:
+            product.formatted_price = product.price
+        promo = category_promo_map.get(product.category)
+        if promo:
+            raw_discount = float(product.price) * promo.discount_percent / 100
+            discount = min(raw_discount, float(promo.max_discount_amount)) if promo.max_discount_amount else raw_discount
+            product.promo_price_formatted = "{:,.0f}".format(round(float(product.price) - discount, 2))
+            product.has_promo = True
+            product.promo_label = f'{promo.discount_percent}% OFF'
+        else:
+            product.has_promo = False
+
+    return render(request, 'index.html', {
+        'active_promos': active_promos,
+        'top_products': top_products,
+        'featured_row': featured_row,
+        'recently_added': recently_added,
+    })
 
 def admin_required(view_func):
     """Decorator to protect admin-only views."""
@@ -19,6 +58,23 @@ def admin_required(view_func):
             return redirect('adminlogin')
         return view_func(request, *args, **kwargs)
     return wrapper
+
+def merge_guest_cart(request, user):
+    """Merge session guest_cart into the logged-in user's DB cart."""
+    guest_cart = request.session.pop('guest_cart', {})
+    for pid, qty in guest_cart.items():
+        try:
+            product = Product.objects.get(id=int(pid))
+            cart_item, created = Cart.objects.get_or_create(
+                user=user,
+                product=product,
+                defaults={'quantity': qty}
+            )
+            if not created:
+                cart_item.quantity += qty
+                cart_item.save()
+        except Product.DoesNotExist:
+            pass
 
 def register(request):
     if request.method == 'POST':
@@ -33,6 +89,7 @@ def register(request):
             user = User.objects.create(name=name, email=email, password=make_password(password), address=address, phone=phone)
             request.session['email'] = user.email   # ← log them in immediately
             request.session['name'] = user.name
+            merge_guest_cart(request, user)
             return redirect('index')
     return render(request, 'register.html')
 
@@ -48,7 +105,8 @@ def login(request):
                 return render(request, 'login.html')
             request.session['email'] = user.email   # ← set session
             request.session['name'] = user.name
-            return redirect('/')                     # ← redirect to / not 'index'
+            merge_guest_cart(request, user)
+            return redirect('/')                    
         except User.DoesNotExist:
             messages.error(request, 'Invalid email or password.')
     return render(request, 'login.html')
@@ -60,7 +118,8 @@ def profile(request):
     if email is not None:
         try:
             user = User.objects.get(email=email)
-            return render(request, 'profile.html', {'user': user})
+            orders = Order.objects.filter(email=email).prefetch_related('items').order_by('-created_at')
+            return render(request, 'profile.html', {'user': user, 'orders': orders})
         except User.DoesNotExist:
             messages.error(request, 'User not found.')
             return redirect('login')
@@ -87,6 +146,38 @@ def editprofile(request):
         messages.success(request, 'Profile updated successfully!')
         return redirect('profile')  
     return render(request, 'profile.html', {'user': user})
+
+def upload_avatar(request):
+    email = request.session.get('email')
+    if not email:
+        return redirect('login')
+    user = User.objects.get(email=email)
+    if request.method == 'POST' and request.FILES.get('avatar'):
+        user.avatar = request.FILES['avatar']
+        user.save()
+        messages.success(request, 'Profile picture updated!')
+    return redirect('profile')
+
+def change_password(request):
+    email = request.session.get('email')
+    if not email:
+        return redirect('login')
+    user = User.objects.get(email=email)
+    if request.method == 'POST':
+        current = request.POST.get('current_password', '')
+        new_pw  = request.POST.get('new_password', '')
+        confirm = request.POST.get('confirm_password', '')
+        if not check_password(current, user.password):
+            messages.error(request, 'Current password is incorrect.')
+        elif new_pw != confirm:
+            messages.error(request, 'New passwords do not match.')
+        elif len(new_pw) < 6:
+            messages.error(request, 'Password must be at least 6 characters.')
+        else:
+            user.password = make_password(new_pw)
+            user.save()
+            messages.success(request, 'Password changed successfully!')
+    return redirect('profile')
 
 @admin_required
 def userlist(request):
@@ -169,7 +260,12 @@ def add_to_cart(request, id):
             cart_item.save()
         return redirect('cart')
     else:
-        return redirect('login')
+        # Guest: store cart in session
+        guest_cart = request.session.get('guest_cart', {})
+        pid = str(id)
+        guest_cart[pid] = guest_cart.get(pid, 0) + 1
+        request.session['guest_cart'] = guest_cart
+        return redirect('cart')
 
 
 @never_cache
@@ -211,7 +307,50 @@ def cart(request):
             'has_stock_issue': has_stock_issue,
         })
     else:
-        return redirect('login')
+        # Guest cart from session
+        guest_cart = request.session.get('guest_cart', {})
+        cart_items = []
+        total_price = 0
+        for pid, qty in guest_cart.items():
+            try:
+                product = Product.objects.get(id=int(pid))
+                item = type('GuestItem', (), {
+                    'product': product,
+                    'quantity': qty,
+                    'total_price': product.price * qty,
+                    'is_digital': False,
+                    'exceeds_stock': qty > product.quantity,
+                    'stock_left': product.quantity,
+                    'id': pid,
+                })()
+                try:
+                    cat = Category.objects.get(name=product.category)
+                    item.is_digital = cat.is_digital
+                except Category.DoesNotExist:
+                    pass
+                cart_items.append(item)
+                total_price += item.total_price
+            except Product.DoesNotExist:
+                pass
+
+        total_price_int = int(total_price)
+        physical_total = sum(i.total_price for i in cart_items if not i.is_digital)
+        physical_total_int = int(physical_total)
+        has_physical = any(not i.is_digital for i in cart_items)
+        delivery_fee = 0 if (physical_total_int >= 10000 or not has_physical) else 199
+        grand_total = total_price_int + delivery_fee
+        delivery_remaining = max(0, 10000 - physical_total_int)
+        has_stock_issue = any(i.exceeds_stock for i in cart_items)
+
+        return render(request, 'cart.html', {
+            'cart_items': cart_items,
+            'total_price': total_price_int,
+            'delivery_fee': delivery_fee,
+            'grand_total': grand_total,
+            'delivery_remaining': delivery_remaining,
+            'has_stock_issue': has_stock_issue,
+            'is_guest': True,
+        })
      
 def delete_cart(request, id): 
     if request.method == "POST": 
@@ -219,6 +358,12 @@ def delete_cart(request, id):
         cart_item.delete() 
         return redirect('cart') 
     return render(request, 'cart.html')
+
+def guest_remove_item(request, pid):
+    guest_cart = request.session.get('guest_cart', {})
+    guest_cart.pop(str(pid), None)
+    request.session['guest_cart'] = guest_cart
+    return redirect('cart')
  
  
 @never_cache
@@ -226,11 +371,10 @@ def all_products(request):
     category = request.GET.get("category", "")
     
     if category:
-        products = Product.objects.filter(category=category)
+        products = Product.objects.filter(category=category).order_by('name')
     else:
-        products = Product.objects.all()
+        products = Product.objects.all().order_by('name')
  
-    # format prices here instead of using humanize in template
     for product in products:
         try:
             product.formatted_price = "{:,.0f}".format(float(product.price))
@@ -508,6 +652,22 @@ def checkout(request):
         except User.DoesNotExist:
             pass
 
+    # Guest fallback — build cart_items from session
+    if not cart_items:
+        guest_cart = request.session.get('guest_cart', {})
+        for pid, qty in guest_cart.items():
+            try:
+                product = Product.objects.get(id=int(pid))
+                item = type('GuestItem', (), {
+                    'product': product,
+                    'quantity': qty,
+                    'total_price': product.price * qty,
+                    'id': pid,
+                })()
+                cart_items.append(item)
+            except Product.DoesNotExist:
+                pass
+
     if not cart_items:
         messages.error(request, 'Your cart is empty.')
         return redirect('cart')
@@ -625,6 +785,8 @@ def checkout(request):
 
         if user:
             Cart.objects.filter(user=user).delete()
+        else:
+            request.session.pop('guest_cart', None)
 
         return redirect('order_confirmation', order_id=order.order_id)
 
@@ -649,7 +811,14 @@ def order_history(request):
     email = request.session.get('email')
     if not email:
         return redirect('login')
-    orders = Order.objects.filter(email=email).prefetch_related('items')
+    try:
+        user = User.objects.get(email=email)
+        # Match orders by linked user OR by the email on the order
+        orders = Order.objects.filter(
+            models.Q(user=user) | models.Q(email=email)
+        ).distinct().prefetch_related('items')
+    except User.DoesNotExist:
+        orders = Order.objects.filter(email=email).prefetch_related('items')
     return render(request, 'order_history.html', {'orders': orders})
 
 
