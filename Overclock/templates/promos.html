@@ -128,6 +128,7 @@ select.input-field:focus {
 
 .type-pct  { background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; }
 .type-free { background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:#d8b4fe; }
+.type-product { background:rgba(234,179,8,0.15); border:1px solid rgba(234,179,8,0.3); color:#fde047; }
 
 input,textarea { cursor:text; }
 button,a { cursor:pointer; }
@@ -270,7 +271,7 @@ button,a { cursor:pointer; }
                     <div>
                         <div class="flex items-center gap-2 flex-wrap mb-1">
                             <h3 class="text-lg font-semibold">{{ promo.name }}</h3>
-                            <span class="badge {% if promo.promo_type == 'PERCENTAGE' %}type-pct{% else %}type-free{% endif %}">
+                            <span class="badge {% if promo.promo_type == 'PERCENTAGE' %}type-pct{% elif promo.promo_type == 'PRODUCT_DISCOUNT' %}type-product{% else %}type-free{% endif %}">
                                 {{ promo.get_promo_type_display }}
                             </span>
                         </div>
@@ -296,6 +297,11 @@ button,a { cursor:pointer; }
                                 {% if promo.max_discount_amount %}
                                 <span class="text-gray-400">(max ₹{{ promo.max_discount_amount|floatformat:0 }})</span>
                                 {% endif %}
+                            </span>
+                            {% elif promo.promo_type == 'PRODUCT_DISCOUNT' %}
+                            <span class="px-3 py-1 rounded-lg text-yellow-400"
+                                  style="background:rgba(234,179,8,0.08); border:1px solid rgba(234,179,8,0.2);">
+                                {{ promo.discount_percent }}% off → {{ promo.applies_to_product.name|default:"—" }}
                             </span>
                             {% else %}
                             <span class="px-3 py-1 rounded-lg text-purple-400"
@@ -344,7 +350,8 @@ button,a { cursor:pointer; }
                             '{{ promo.end_date|date:'Y-m-d\TH:i' }}',
                             '{{ promo.discount_percent|default:'' }}',
                             '{{ promo.max_discount_amount|default:'' }}',
-                            '{{ promo.free_product_id|default:'' }}'
+                            '{{ promo.free_product_id|default:'' }}',
+                            '{{ promo.applies_to_product_id|default:'' }}'
                         )"
                                 class="w-9 h-9 rounded-xl flex items-center justify-center transition hover:scale-110"
                                 style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.2);">
@@ -445,6 +452,7 @@ button,a { cursor:pointer; }
 
                         <option value="PERCENTAGE">Percentage Off</option>
                         <option value="FREE_PRODUCT">Free Product with Purchase</option>
+                        <option value="PRODUCT_DISCOUNT">Single Product Discount</option>
                     </select>
                 </div>
 
@@ -531,6 +539,18 @@ button,a { cursor:pointer; }
                         {% endfor %}
 
                     </select>
+                </div>
+
+                <!-- SINGLE PRODUCT DISCOUNT fields -->
+                <div id="addProductFields" class="hidden">
+                    <label class="label">Apply Discount to Product <span class="text-red-400">*</span></label>
+                    <select name="applies_to_product" class="input-field">
+                        <option value="">— Select product —</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }} (₹{{ product.price }})</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-gray-600 mt-1">Discount applies to this specific product. Set % and max above.</p>
                 </div>
 
                 <div>
@@ -664,6 +684,7 @@ button,a { cursor:pointer; }
 
                         <option value="PERCENTAGE">Percentage Off</option>
                         <option value="FREE_PRODUCT">Free Product with Purchase</option>
+                        <option value="PRODUCT_DISCOUNT">Single Product Discount</option>
 
                     </select>
                 </div>
@@ -756,6 +777,18 @@ button,a { cursor:pointer; }
                     </select>
                 </div>
 
+                <!-- Single Product Discount Fields -->
+                <div id="editProductFields" class="hidden">
+                    <label class="label">Apply Discount to Product</label>
+                    <select name="applies_to_product" id="editAppliesProduct" class="input-field">
+                        <option value="">— Select product —</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }} (₹{{ product.price }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+
                 <div>
 
                     <label class="label">Applies to Category</label>
@@ -834,12 +867,13 @@ button,a { cursor:pointer; }
 // ── Add modal type toggle ──
 function toggleAddFields() {
     const type = document.getElementById('addPromoType').value;
-    document.getElementById('addPctFields').classList.toggle('hidden',  type !== 'PERCENTAGE');
-    document.getElementById('addFreeFields').classList.toggle('hidden', type !== 'FREE_PRODUCT');
+    document.getElementById('addPctFields').classList.toggle('hidden',    type !== 'PERCENTAGE' && type !== 'PRODUCT_DISCOUNT');
+    document.getElementById('addFreeFields').classList.toggle('hidden',   type !== 'FREE_PRODUCT');
+    document.getElementById('addProductFields').classList.toggle('hidden', type !== 'PRODUCT_DISCOUNT');
 }
 
 // ── Edit modal populate & type toggle ──
-function openEditModal(id, name, desc, type, code, cat, start, end, pct, maxD, freeId) {
+function openEditModal(id, name, desc, type, code, cat, start, end, pct, maxD, freeId, productId) {
     document.getElementById('editForm').action = `/adminhome/promos/edit/${id}/`;
     document.getElementById('editName').value        = name;
     document.getElementById('editDescription').value = desc;
@@ -851,14 +885,16 @@ function openEditModal(id, name, desc, type, code, cat, start, end, pct, maxD, f
     document.getElementById('editPct').value         = pct;
     document.getElementById('editMaxDiscount').value = maxD;
     if (freeId) document.getElementById('editFreeProduct').value = freeId;
+    if (productId) document.getElementById('editAppliesProduct').value = productId;
     toggleEditFields();
     document.getElementById('editModal').classList.remove('hidden');
 }
 
 function toggleEditFields() {
     const type = document.getElementById('editPromoType').value;
-    document.getElementById('editPctFields').classList.toggle('hidden',  type !== 'PERCENTAGE');
-    document.getElementById('editFreeFields').classList.toggle('hidden', type !== 'FREE_PRODUCT');
+    document.getElementById('editPctFields').classList.toggle('hidden',     type !== 'PERCENTAGE' && type !== 'PRODUCT_DISCOUNT');
+    document.getElementById('editFreeFields').classList.toggle('hidden',    type !== 'FREE_PRODUCT');
+    document.getElementById('editProductFields').classList.toggle('hidden', type !== 'PRODUCT_DISCOUNT');
 }
 
 function stepPromoValue(inputId, delta) {

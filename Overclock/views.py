@@ -23,16 +23,19 @@ def index(request):
     # Apply promo pricing to top_products and featured_row for display
     active_promos_list = [p for p in Promotion.objects.filter(is_active=True) if p.is_valid_now]
     category_promo_map = {}
+    product_promo_map = {}
     for promo in active_promos_list:
         if promo.promo_type == 'PERCENTAGE' and promo.applies_to_category:
             category_promo_map[promo.applies_to_category] = promo
+        elif promo.promo_type == 'PRODUCT_DISCOUNT' and promo.applies_to_product_id:
+            product_promo_map[promo.applies_to_product_id] = promo
 
     for product in list(top_products) + featured_row + list(recently_added):
         try:
             product.formatted_price = "{:,.0f}".format(float(product.price))
         except:
             product.formatted_price = product.price
-        promo = category_promo_map.get(product.category)
+        promo = product_promo_map.get(product.id) or category_promo_map.get(product.category)
         if promo:
             raw_discount = float(product.price) * promo.discount_percent / 100
             discount = min(raw_discount, float(promo.max_discount_amount)) if promo.max_discount_amount else raw_discount
@@ -404,13 +407,16 @@ def all_products(request):
 
     # Build a dict: category_name → promo for price display on cards
     category_promo_map = {}
+    product_promo_map = {}
     for promo in active_promos:
         if promo.promo_type == 'PERCENTAGE' and promo.applies_to_category:
             category_promo_map[promo.applies_to_category] = promo
+        elif promo.promo_type == 'PRODUCT_DISCOUNT' and promo.applies_to_product_id:
+            product_promo_map[promo.applies_to_product_id] = promo
 
     # Tag each product with its promo price if applicable
     for product in products:
-        promo = category_promo_map.get(product.category)
+        promo = product_promo_map.get(product.id) or category_promo_map.get(product.category)
         if promo:
             raw_discount = float(product.price) * promo.discount_percent / 100
             if promo.max_discount_amount:
@@ -709,35 +715,26 @@ def checkout(request):
         card_expiry    = request.POST.get('card_expiry', '').strip()
         card_cvv       = request.POST.get('card_cvv', '').strip()
         delivery_email = request.POST.get('delivery_email', '').strip()
-        coupon_code    = request.POST.get('coupon_code', '').strip().upper()
+        raw_codes = request.POST.get('coupon_code', '')
+        coupon_codes = [c.strip().upper() for c in raw_codes.split(',') if c.strip()]
 
-        # Validate promo if entered
+        # Validate all submitted promos
         discount_amount = 0
-        applied_promo   = None
-        free_product    = None
+        applied_promos  = []
+        free_products   = []
 
-        if coupon_code:
-            result = validate_coupon(coupon_code, cart_items)
+        for code in coupon_codes:
+            result = validate_coupon(code, cart_items)
             if result['valid']:
-                discount_amount = result['discount_amount']
-                applied_promo   = result['promo']
-                free_product    = result['free_product']
+                discount_amount += result['discount_amount']
+                applied_promos.append(result['promo'])
+                if result['free_product']:
+                    free_products.append(result['free_product'])
             else:
-                messages.error(request, result['error'])
-                return render(request, 'checkout.html', {
-                    'cart_items':     cart_items,
-                    'digital_items':  digital_items,
-                    'physical_items': physical_items,
-                    'has_digital':    has_digital,
-                    'has_physical':   has_physical,
-                    'total_price':    total_price,
-                    'delivery_fee':   delivery_fee,
-                    'grand_total':    grand_total,
-                    'prefill':        prefill,
-                    'coupon_code':    coupon_code,
-                })
+                messages.error(request, f'{code}: {result["error"]}')
 
         final_grand_total = max(0, grand_total - int(discount_amount))
+        promo_code_str = ', '.join(p.coupon_code for p in applied_promos) if applied_promos else None
 
         order = Order.objects.create(
             user            = user,
@@ -757,7 +754,7 @@ def checkout(request):
             delivery_fee    = delivery_fee,
             discount_amount = discount_amount,
             grand_total     = final_grand_total,
-            promo_code      = applied_promo.coupon_code if applied_promo else None,
+            promo_code      = promo_code_str,
         )
 
         for item in cart_items:
@@ -772,8 +769,8 @@ def checkout(request):
             product = item.product
             product.quantity = max(0, product.quantity - item.quantity)
             product.save()
-        # Add free product as an OrderItem if applicable
-        if free_product:
+        # Add free products as OrderItems if applicable
+        for free_product in free_products:
             OrderItem.objects.create(
                 order         = order,
                 product_name  = f'{free_product.name} (FREE)',
@@ -790,16 +787,33 @@ def checkout(request):
 
         return redirect('order_confirmation', order_id=order.order_id)
 
+    # Build list of promos applicable to the user's current cart
+    cart_categories  = {item.product.category for item in cart_items}
+    cart_product_ids = {item.product.id for item in cart_items}
+    all_active_promos = [p for p in Promotion.objects.filter(is_active=True) if p.is_valid_now]
+    available_promos = []
+    for p in all_active_promos:
+        if p.promo_type == 'FREE_PRODUCT':
+            if not p.applies_to_category or p.applies_to_category in cart_categories:
+                available_promos.append(p)
+        elif p.promo_type == 'PRODUCT_DISCOUNT':
+            if p.applies_to_product_id and p.applies_to_product_id in cart_product_ids:
+                available_promos.append(p)
+        elif p.promo_type == 'PERCENTAGE':
+            if not p.applies_to_category or p.applies_to_category in cart_categories:
+                available_promos.append(p)
+
     return render(request, 'checkout.html', {
-        'cart_items':      cart_items,
-        'digital_items':   digital_items,
-        'physical_items':  physical_items,
-        'has_digital':     has_digital,
-        'has_physical':    has_physical,
-        'total_price':     total_price,
-        'delivery_fee':    delivery_fee,
-        'grand_total':     grand_total,
-        'prefill':         prefill,
+        'cart_items':       cart_items,
+        'digital_items':    digital_items,
+        'physical_items':   physical_items,
+        'has_digital':      has_digital,
+        'has_physical':     has_physical,
+        'total_price':      total_price,
+        'delivery_fee':     delivery_fee,
+        'grand_total':      grand_total,
+        'prefill':          prefill,
+        'available_promos': available_promos,
     })
 
 def order_confirmation(request, order_id):
@@ -897,7 +911,18 @@ def validate_coupon(coupon_code, cart_items):
             return {'valid': False, 'error': 'This coupon has expired.'}
 
     # Find applicable items
-    if promo.applies_to_category:
+    if promo.promo_type == 'PRODUCT_DISCOUNT' and promo.applies_to_product_id:
+        applicable_items = [
+            item for item in cart_items
+            if item.product.id == promo.applies_to_product_id
+        ]
+        if not applicable_items:
+            return {
+                'valid': False,
+                'error': f'This coupon only applies to {promo.applies_to_product.name}. '
+                         f'That product is not in your cart.'
+            }
+    elif promo.applies_to_category:
         applicable_items = [
             item for item in cart_items
             if item.product.category == promo.applies_to_category
@@ -912,10 +937,9 @@ def validate_coupon(coupon_code, cart_items):
         applicable_items = list(cart_items)
 
     # Calculate discount
-    if promo.promo_type == 'PERCENTAGE':
+    if promo.promo_type in ('PERCENTAGE', 'PRODUCT_DISCOUNT'):
         applicable_subtotal = sum(item.total_price for item in applicable_items)
         raw_discount = applicable_subtotal * promo.discount_percent / 100
-        # Apply cap if set
         if promo.max_discount_amount:
             discount_amount = min(raw_discount, promo.max_discount_amount)
         else:
@@ -929,11 +953,9 @@ def validate_coupon(coupon_code, cart_items):
         }
 
     elif promo.promo_type == 'FREE_PRODUCT':
-        # Only deduct price if the free product is already in the cart
         free_product = promo.free_product
         cart_product_names = [item.product.name for item in cart_items]
         already_in_cart = free_product and free_product.name in cart_product_names
-
         return {
             'valid':            True,
             'promo':            promo,
@@ -979,17 +1001,19 @@ def add_promo(request):
             messages.error(request, f'Coupon code "{coupon_code}" already exists.')
             return redirect('promo_list')
 
+        applies_to_product_id = request.POST.get('applies_to_product') or None
         Promotion.objects.create(
-            name                = name,
-            description         = description,
-            promo_type          = promo_type,
-            coupon_code         = coupon_code,
-            applies_to_category = applies_to_category,
-            start_date          = start_date,
-            end_date            = end_date,
-            discount_percent    = discount_percent,
-            max_discount_amount = max_discount_amount,
-            free_product_id     = free_product_id,
+            name                  = name,
+            description           = description,
+            promo_type            = promo_type,
+            coupon_code           = coupon_code,
+            applies_to_category   = applies_to_category,
+            start_date            = start_date,
+            end_date              = end_date,
+            discount_percent      = discount_percent,
+            max_discount_amount   = max_discount_amount,
+            free_product_id       = free_product_id,
+            applies_to_product_id = applies_to_product_id,
         )
         messages.success(request, f'Promotion "{name}" created successfully.')
     return redirect('promo_list')
@@ -1008,7 +1032,8 @@ def edit_promo(request, id):
         promo.end_date            = request.POST.get('end_date')
         promo.discount_percent    = request.POST.get('discount_percent') or None
         promo.max_discount_amount = request.POST.get('max_discount_amount') or None
-        promo.free_product_id     = request.POST.get('free_product') or None
+        promo.free_product_id       = request.POST.get('free_product') or None
+        promo.applies_to_product_id = request.POST.get('applies_to_product') or None
         promo.save()
         messages.success(request, f'Promotion "{promo.name}" updated.')
     return redirect('promo_list')
@@ -1038,8 +1063,8 @@ def toggle_promo(request, id):
 def apply_coupon(request):
     """AJAX endpoint — validates coupon and returns discount info as JSON."""
     if request.method == 'POST':
-        import json
         coupon_code = request.POST.get('coupon_code', '').strip()
+        already_applied_codes = [c.strip() for c in request.POST.get('already_applied', '').split(',') if c.strip()]
         email = request.session.get('email')
 
         cart_items = []
@@ -1051,25 +1076,63 @@ def apply_coupon(request):
                 pass
 
         if not cart_items:
+            guest_cart = request.session.get('guest_cart', {})
+            for pid, qty in guest_cart.items():
+                try:
+                    product = Product.objects.get(id=int(pid))
+                    item = type('GuestItem', (), {
+                        'product': product,
+                        'quantity': qty,
+                        'total_price': product.price * qty,
+                        'id': pid,
+                    })()
+                    cart_items.append(item)
+                except Product.DoesNotExist:
+                    pass
+
+        if not cart_items:
             return JsonResponse({'valid': False, 'error': 'Your cart is empty.'})
 
-        result = validate_coupon(coupon_code, cart_items)
+        # Reject duplicate
+        if coupon_code.upper() in [c.upper() for c in already_applied_codes]:
+            return JsonResponse({'valid': False, 'error': 'This coupon is already applied.'})
 
-        if result['valid']:
-            promo = result['promo']
-            response = {
-                'valid':           True,
-                'promo_name':      promo.name,
-                'promo_type':      promo.promo_type,
-                'discount_amount': float(result['discount_amount']),
-                'coupon_code':     promo.coupon_code,
-            }
-            if promo.promo_type == 'FREE_PRODUCT' and result['free_product']:
-                response['free_product_name'] = result['free_product'].name
-                response['free_product_price'] = float(result['free_product'].price)
-            return JsonResponse(response)
-        else:
+        result = validate_coupon(coupon_code, cart_items)
+        if not result['valid']:
             return JsonResponse({'valid': False, 'error': result['error']})
+
+        # Conflict check — get already-claimed product ids across all applied promos
+        claimed_product_ids = set()
+        for code in already_applied_codes:
+            try:
+                existing_promo = Promotion.objects.get(coupon_code__iexact=code)
+                existing_result = validate_coupon(code, cart_items)
+                if existing_result['valid']:
+                    for item in existing_result['applicable_items']:
+                        claimed_product_ids.add(item.product.id)
+            except Promotion.DoesNotExist:
+                pass
+
+        new_applicable_ids = {item.product.id for item in result['applicable_items']}
+        conflict = claimed_product_ids & new_applicable_ids
+        if conflict:
+            return JsonResponse({
+                'valid': False,
+                'error': 'Cannot apply two coupon for same item(s).'
+            })
+
+        promo = result['promo']
+        response = {
+            'valid':           True,
+            'promo_name':      promo.name,
+            'promo_type':      promo.promo_type,
+            'discount_amount': float(result['discount_amount']),
+            'coupon_code':     promo.coupon_code,
+        }
+        if promo.promo_type == 'FREE_PRODUCT' and result['free_product']:
+            response['free_product_name']  = result['free_product'].name
+            response['free_product_price'] = float(result['free_product'].price)
+        return JsonResponse(response)
 
     return JsonResponse({'valid': False, 'error': 'Invalid request.'})
 

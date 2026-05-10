@@ -113,7 +113,7 @@ class Order(models.Model):
     subtotal       = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_fee   = models.DecimalField(max_digits=10, decimal_places=2)
     grand_total       = models.DecimalField(max_digits=10, decimal_places=2)
-    promo_code        = models.CharField(max_length=50, blank=True, null=True)
+    promo_code        = models.CharField(max_length=500, blank=True, null=True)
     discount_amount   = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     created_at     = models.DateTimeField(auto_now_add=True)
@@ -147,8 +147,9 @@ class OrderItem(models.Model):
     
 class Promotion(models.Model):
     PROMO_TYPE_CHOICES = [
-        ('PERCENTAGE',   'Percentage Off'),
-        ('FREE_PRODUCT', 'Free Product with Purchase'),
+        ('PERCENTAGE',      'Percentage Off'),
+        ('FREE_PRODUCT',    'Free Product with Purchase'),
+        ('PRODUCT_DISCOUNT','Single Product Discount'),
     ]
 
     name                = models.CharField(max_length=150)
@@ -164,6 +165,11 @@ class Promotion(models.Model):
     free_product        = models.ForeignKey('Product', null=True, blank=True,
                                             on_delete=models.SET_NULL,
                                             related_name='free_in_promos')
+    
+    # PRODUCT_DISCOUNT fields
+    applies_to_product  = models.ForeignKey('Product', null=True, blank=True,
+                                            on_delete=models.SET_NULL,
+                                            related_name='product_promos')
 
     # Targeting
     applies_to_category = models.CharField(max_length=100, blank=True,

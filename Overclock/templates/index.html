@@ -469,8 +469,18 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProduct
     {% if recently_added %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {% for product in recently_added %}
-        <a href="{% url 'all_products' %}?search={{ product.name|urlencode }}"
-           class="glass rounded-3xl p-5 hover:-translate-y-2 transition block">
+        <div class="glass rounded-3xl p-5 hover:-translate-y-2 transition cursor-pointer"
+            onclick="openProductModal(this)"
+            data-id="{{ product.id }}"
+            data-name="{{ product.name }}"
+            data-img="{% if product.image %}{{ product.image.url }}{% endif %}"
+            data-price="{% if product.has_promo %}{{ product.promo_price_formatted }}{% else %}{{ product.formatted_price }}{% endif %}"
+            data-orig="{% if product.has_promo %}{{ product.formatted_price }}{% endif %}"
+            data-promo="{% if product.has_promo %}{{ product.promo_label }}{% endif %}"
+            data-desc="{{ product.description }}"
+            data-stock="{{ product.quantity }}"
+            data-cat="{{ product.category }}"
+            data-addurl="{% url 'add_to_cart' product.id %}">
             {% if product.image %}
             <img src="{{ product.image.url }}" class="top-product-img mb-4" alt="{{ product.name }}">
             {% else %}
@@ -481,8 +491,16 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProduct
             <span class="inline-block text-xs px-2 py-1 rounded-full mb-2" style="background:rgba(99,102,241,0.15);color:#a5b4fc;">New</span>
             <h3 class="text-lg font-semibold">{{ product.name }}</h3>
             <p class="text-gray-400 text-xs mt-1">{{ product.category }}</p>
-            <p class="text-indigo-300 mt-2 font-medium">₹{{ product.price }}</p>
-        </a>
+            {% if product.has_promo %}
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
+                <p class="text-gray-500 text-sm line-through">₹{{ product.formatted_price }}</p>
+                <p class="text-green-400 font-semibold">₹{{ product.promo_price_formatted }}</p>
+                <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.15);color:#f87171;">{{ product.promo_label }}</span>
+            </div>
+            {% else %}
+            <p class="text-indigo-300 mt-2 font-medium">₹{{ product.formatted_price }}</p>
+            {% endif %}
+        </div>
         {% endfor %}
     </div>
     {% endif %}

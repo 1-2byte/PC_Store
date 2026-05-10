@@ -38,7 +38,15 @@ input,textarea,select { cursor:text; }
             <a href="{% url 'all_products' %}" class="hover:text-white transition">Products</a>
             <a href="{% url 'cart' %}" class="hover:text-white transition"><i class="fa-solid fa-cart-shopping"></i></a>
         </nav>
-        <a href="{% url 'all_products' %}" class="build-btn px-6 py-3 rounded-2xl text-sm font-medium">Shop More</a>
+        <div class="flex items-center gap-3">
+            {% if not prefill.email %}
+            <a href="{% url 'login' %}" class="px-5 py-2.5 rounded-2xl text-sm font-medium transition hover:-translate-y-0.5"
+               style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc;">
+                <i class="fa-solid fa-right-to-bracket mr-1"></i> Login
+            </a>
+            {% endif %}
+            <a href="{% url 'all_products' %}" class="build-btn px-6 py-3 rounded-2xl text-sm font-medium">Shop More</a>
+        </div>
     </div>
 </header>
 
@@ -75,8 +83,8 @@ input,textarea,select { cursor:text; }
     <form method="POST" action="{% url 'checkout' %}" id="checkoutForm">
         {% csrf_token %}
         <!-- Hidden fields submitted with form -->
-        <input type="hidden" name="coupon_code"      id="couponHidden"       value="">
-        <input type="hidden" name="discount_amount"  id="discountHidden"     value="0">
+        <input type="hidden" name="coupon_code"     id="couponHidden"    value="">
+        <input type="hidden" name="discount_amount" id="discountHidden"  value="0">
 
         <div class="grid lg:grid-cols-[1fr_380px] gap-10 items-start">
 
@@ -140,41 +148,46 @@ input,textarea,select { cursor:text; }
                 <div class="glass rounded-3xl p-8">
                     <p class="section-title">Promo Code</p>
 
-                    <!-- Input state (shown when no coupon applied) -->
-                    <div id="couponInputArea">
-                        <div class="flex gap-3">
-                            <input type="text" id="couponInput"
-                                class="input-field flex-1 uppercase tracking-widest"
-                                placeholder="ENTER CODE e.g. GPU20"
-                                oninput="this.value = this.value.toUpperCase()">
-                            <button type="button" onclick="checkCoupon()"
-                                    class="px-5 py-3 rounded-xl text-sm font-semibold transition hover:-translate-y-0.5 whitespace-nowrap"
-                                    style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc;">
-                                <i class="fa-solid fa-tag mr-1"></i> Apply
-                            </button>
-                        </div>
-                        <div id="couponMsg" class="mt-3 text-sm hidden"></div>
+                    <!-- Input row — always visible -->
+                    <div class="flex gap-3">
+                        <input type="text" id="couponInput"
+                            class="input-field flex-1 uppercase tracking-widest"
+                            placeholder="ENTER CODE e.g. GPU20"
+                            oninput="this.value = this.value.toUpperCase()">
+                        <button type="button" onclick="checkCoupon()"
+                                class="px-5 py-3 rounded-xl text-sm font-semibold transition hover:-translate-y-0.5 whitespace-nowrap"
+                                style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc;">
+                            <i class="fa-solid fa-tag mr-1"></i> Apply
+                        </button>
                     </div>
+                    <div id="couponMsg" class="mt-3 text-sm hidden"></div>
 
-                    <!-- Applied state (shown after valid coupon) -->
-                    <div id="couponAppliedArea" class="hidden">
-                        <div class="flex items-center justify-between px-4 py-3 rounded-xl"
-                             style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25);">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-circle-check text-green-400"></i>
+                    <!-- Applied coupons list -->
+                    <div id="appliedCouponsList" class="mt-3 space-y-2"></div>
+
+                    <!-- Active Coupons hints -->
+                    {% if available_promos %}
+                    <div class="mt-4">
+                        <p class="text-xs text-gray-500 uppercase tracking-widest mb-2">Active Coupons</p>
+                        <div class="flex flex-col gap-2">
+                            {% for promo in available_promos %}
+                            <div class="flex items-center justify-between px-4 py-2.5 rounded-xl"
+                                 style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2);">
                                 <div>
-                                    <p class="text-sm font-semibold text-green-400" id="appliedPromoName"></p>
-                                    <p class="text-xs text-gray-400" id="appliedPromoCode"></p>
+                                    <span class="font-mono font-bold text-indigo-300 tracking-widest text-sm">{{ promo.coupon_code }}</span>
+                                    <p class="text-xs text-gray-400 mt-0.5">{{ promo.description }}</p>
                                 </div>
+                                <button type="button"
+                                        onclick="applyPromoHint('{{ promo.coupon_code }}')"
+                                        class="ml-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition hover:-translate-y-0.5 whitespace-nowrap flex-shrink-0"
+                                        style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc;">
+                                    <i class="fa-solid fa-tag mr-1"></i> Apply
+                                </button>
                             </div>
-                            <button type="button" onclick="removeCoupon()"
-                                    class="flex items-center gap-1.5 text-xs font-semibold transition hover:text-white"
-                                    style="color:#f87171;">
-                                <i class="fa-solid fa-xmark"></i> Remove
-                            </button>
+                            {% endfor %}
                         </div>
                     </div>
-
+                    {% endif %}
                 </div>
 
                 <!-- Payment Method -->
@@ -299,18 +312,11 @@ input,textarea,select { cursor:text; }
                     </div>
                     {% endif %}
 
-                    <!-- Discount row — hidden until coupon applied -->
-                    <div id="discountRow" class="hidden flex justify-between text-gray-400">
-                        <span id="discountLabel" class="text-green-400"></span>
-                        <span id="discountValue" class="text-green-400"></span>
-                    </div>
+                    <!-- Discount rows — one per applied coupon -->
+                    <div id="discountRows"></div>
 
-                    <!-- Free product row -->
-                    <div id="freeProductRow" class="hidden px-3 py-2 rounded-xl text-xs"
-                         style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); color:#86efac;">
-                        <i class="fa-solid fa-gift mr-1"></i>
-                        <span id="freeProductName"></span> added for free!
-                    </div>
+                    <!-- Free product rows -->
+                    <div id="freeProductRows"></div>
 
                     <div class="flex justify-between pt-3 border-t border-white/5">
                         <span class="font-semibold">Total</span>
@@ -331,14 +337,62 @@ input,textarea,select { cursor:text; }
 <footer class="text-center py-10 text-gray-500 text-sm">© 2026 OVERCLOCK — Built for Performance</footer>
 
 <script>
-function showPaymentFields() {
-    const method = document.querySelector('input[name="payment_method"]:checked').value;
-    document.getElementById('upiFields').classList.toggle('hidden', method !== 'UPI');
-    document.getElementById('cardFields').classList.toggle('hidden', method !== 'CARD');
+const baseGrandTotal = {{ grand_total }};
+let appliedCoupons = []; // [{code, name, discount, type, free_product_name}]
+
+function getAppliedCodes() {
+    return appliedCoupons.map(c => c.code).join(',');
 }
 
-const baseGrandTotal = {{ grand_total }};
-let appliedDiscount  = 0;
+function rebuildUI() {
+    const totalDiscount = appliedCoupons.reduce((s, c) => s + c.discount, 0);
+
+    // Hidden fields
+    document.getElementById('couponHidden').value   = getAppliedCodes();
+    document.getElementById('discountHidden').value = totalDiscount;
+
+    // Discount rows
+    const discountRows = document.getElementById('discountRows');
+    discountRows.innerHTML = appliedCoupons.map(c => `
+        <div class="flex justify-between text-green-400 text-sm">
+            <span>${c.name} (${c.code})</span>
+            <span>-₹${c.discount.toLocaleString('en-IN')}</span>
+        </div>
+    `).join('');
+
+    // Free product rows
+    const freeRows = document.getElementById('freeProductRows');
+    freeRows.innerHTML = appliedCoupons.filter(c => c.free_product_name).map(c => `
+        <div class="px-3 py-2 rounded-xl text-xs mt-1"
+             style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); color:#86efac;">
+            <i class="fa-solid fa-gift mr-1"></i>${c.free_product_name} added for free!
+        </div>
+    `).join('');
+
+    // Applied coupon badges
+    const list = document.getElementById('appliedCouponsList');
+    list.innerHTML = appliedCoupons.map(c => `
+        <div class="flex items-center justify-between px-4 py-3 rounded-xl"
+             style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25);">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-circle-check text-green-400"></i>
+                <div>
+                    <p class="text-sm font-semibold text-green-400">"${c.name}" applied!</p>
+                    <p class="text-xs text-gray-400">${c.code}</p>
+                </div>
+            </div>
+            <button type="button" onclick="removeCoupon('${c.code}')"
+                    class="flex items-center gap-1.5 text-xs font-semibold transition hover:text-white"
+                    style="color:#f87171;">
+                <i class="fa-solid fa-xmark"></i> Remove
+            </button>
+        </div>
+    `).join('');
+
+    // Grand total
+    document.getElementById('finalTotal').textContent =
+        `₹${Math.max(0, baseGrandTotal - totalDiscount).toLocaleString('en-IN')}`;
+}
 
 async function checkCoupon() {
     const code = document.getElementById('couponInput').value.trim();
@@ -346,66 +400,40 @@ async function checkCoupon() {
 
     const formData = new FormData();
     formData.append('coupon_code', code);
+    formData.append('already_applied', getAppliedCodes());
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
     const res  = await fetch("{% url 'apply_coupon' %}", { method: 'POST', body: formData });
     const data = await res.json();
 
     if (data.valid) {
-        appliedDiscount = data.discount_amount;
-
-        // populate hidden fields so form submission carries the coupon
-        document.getElementById('couponHidden').value   = data.coupon_code;
-        document.getElementById('discountHidden').value = data.discount_amount;
-
-        // discount row
-        document.getElementById('discountRow').classList.remove('hidden');
-        document.getElementById('discountLabel').textContent = `${data.promo_name} (${data.coupon_code})`;
-        document.getElementById('discountValue').textContent = `-₹${data.discount_amount.toLocaleString('en-IN')}`;
-
-        // updated total
-        document.getElementById('finalTotal').textContent =
-            `₹${Math.max(0, baseGrandTotal - data.discount_amount).toLocaleString('en-IN')}`;
-
-        // free product row
-        if (data.promo_type === 'FREE_PRODUCT' && data.free_product_name) {
-            document.getElementById('freeProductRow').classList.remove('hidden');
-            document.getElementById('freeProductName').textContent = data.free_product_name;
-        }
-
-        // switch to applied state UI
-        document.getElementById('appliedPromoName').textContent = `"${data.promo_name}" applied!`;
-        document.getElementById('appliedPromoCode').textContent = data.coupon_code;
-        document.getElementById('couponInputArea').classList.add('hidden');
-        document.getElementById('couponAppliedArea').classList.remove('hidden');
-
+        appliedCoupons.push({
+            code:             data.coupon_code,
+            name:             data.promo_name,
+            discount:         data.discount_amount,
+            type:             data.promo_type,
+            free_product_name: data.free_product_name || null,
+        });
+        rebuildUI();
+        document.getElementById('couponInput').value = '';
+        showMsg(`${data.coupon_code} applied!`, true);
     } else {
-        removeCoupon();
         showMsg(data.error, false);
     }
 }
 
-function removeCoupon() {
-    appliedDiscount = 0;
+function removeCoupon(code) {
+    appliedCoupons = appliedCoupons.filter(c => c.code !== code);
+    rebuildUI();
+    if (appliedCoupons.length === 0) {
+        const msg = document.getElementById('couponMsg');
+        msg.classList.add('hidden');
+    }
+}
 
-    // clear hidden fields
-    document.getElementById('couponHidden').value   = '';
-    document.getElementById('discountHidden').value = '0';
-
-    // reset UI rows
-    document.getElementById('discountRow').classList.add('hidden');
-    document.getElementById('freeProductRow').classList.add('hidden');
-    document.getElementById('finalTotal').textContent = `₹${baseGrandTotal.toLocaleString('en-IN')}`;
-
-    // switch back to input state
-    document.getElementById('couponInput').value = '';
-    document.getElementById('couponInputArea').classList.remove('hidden');
-    document.getElementById('couponAppliedArea').classList.add('hidden');
-
-    // clear any error message
-    const msg = document.getElementById('couponMsg');
-    msg.classList.add('hidden');
-    msg.textContent = '';
+function applyPromoHint(code) {
+    document.getElementById('couponInput').value = code;
+    checkCoupon();
 }
 
 function showMsg(text, success) {
@@ -414,6 +442,7 @@ function showMsg(text, success) {
     msg.className = `mt-3 text-sm ${success ? 'text-green-400' : 'text-red-400'}`;
     msg.classList.remove('hidden');
 }
+
 </script>
 </body>
 </html>
